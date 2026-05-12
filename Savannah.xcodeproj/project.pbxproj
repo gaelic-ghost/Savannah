@@ -68,6 +68,11 @@
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		498D88442FB3E8B9006D0910 /* docs */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = docs;
+			sourceTree = "<group>";
+		};
 		49BEC4C02FB3BDFB001C9A53 /* Savannah */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = Savannah;
@@ -128,6 +133,7 @@
 		49BEC4B52FB3BDFB001C9A53 = {
 			isa = PBXGroup;
 			children = (
+				498D88442FB3E8B9006D0910 /* docs */,
 				49BEC50A2FB3C7E9001C9A53 /* ROADMAP.md */,
 				49BEC5082FB3C7DB001C9A53 /* README.md */,
 				49BEC4C02FB3BDFB001C9A53 /* Savannah */,
