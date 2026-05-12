@@ -24,6 +24,23 @@ Safari's extension families have different tradeoffs:
 
 The current Savannah target is therefore on the native-Mac-control side of the Safari design space, not the maximum cross-browser-code-sharing side.
 
+## API Boundary
+
+The Safari App Extension target cannot be treated as a WebExtensions runtime. Its injected script gets the Safari app-extension `safari` object, and its native code gets `SafariServices` proxy objects. That is enough for script injection, page messaging, active window and tab access, opening new Safari windows and tabs, reloading pages, and native Mac app coordination.
+
+The Safari App Extension target does not directly expose WebExtensions APIs such as:
+
+```text
+browser.tabs
+browser.windows
+browser.scripting
+browser.devtools
+browser.runtime.sendNativeMessage
+browser.runtime.connectNative
+```
+
+Those APIs belong to Safari Web Extensions. In Savannah terms, that means WebExtension-style tab inventory, screenshot capture, dynamic script injection, and native messaging are not features we can simply call from `SafariTourGuide` as it exists today. We either implement the smaller Safari App Extension surface honestly, add a Safari Web Extension companion target, or use a separate native fallback such as accessibility or another user-approved macOS automation path.
+
 ## Design Goal
 
 Savannah should preserve the Codex-facing browser tool names and command shapes from the Chrome plugin as closely as possible:
@@ -54,13 +71,13 @@ The practical product goal is compatibility at the Codex plugin boundary. Safari
 | Script-to-extension message | `chrome.runtime.sendMessage` | `safari.extension.dispatchMessage` to `SFSafariExtensionHandler.messageReceived` | High |
 | Extension-to-script message | `chrome.tabs.sendMessage` | `SFSafariPage.dispatchMessageToScript` | High |
 | Active tab and window model | `chrome.tabs`, `chrome.windows` | `SFSafariApplication.getActiveWindow`, `SFSafariWindow.getActiveTab`, `SFSafariTab.getActivePage`, `SFSafariPage.getPropertiesWithCompletionHandler` | High for active context |
-| Existing tab inventory | `chrome.tabs.query` | Safari App Extension APIs proved active-window/active-tab access, but full all-window/all-tab enumeration is still unproven; may require native accessibility, AppleScript, Safari Web Extension APIs, or a user-observed-tab model | Low |
+| Existing tab inventory | `chrome.tabs.query` | Safari App Extension APIs proved active-window/active-tab access, but full all-window/all-tab enumeration is still unproven; may require native accessibility, AppleScript, Safari Web Extension APIs, or a user-observed-tab model | Low for App Extension, medium candidate for Web Extension |
 | Tab creation/navigation | `chrome.tabs.create`, CDP navigation | `SFSafariApplication.openWindow(with:)`, `SFSafariWindow.openTab(with:makeActiveIfPossible:)`, active page messaging for script-side navigation only when safe | Medium |
 | Tab groups/session grouping | `chrome.tabGroups` | no direct Safari App Extension equivalent identified yet; may need Savannah-side logical grouping | Low |
 | Browser history | `chrome.history.search` | no direct Safari App Extension equivalent identified yet; likely unavailable without separate Safari/private data access | Low |
 | Downloads | `chrome.downloads` events and download commands | no direct Safari App Extension equivalent identified yet; native app can manage its own downloads, but not necessarily Safari's download list | Low |
 | Window close | `chrome.windows.remove` or tab/window commands | `SFSafariWindow.close()` | Medium |
-| CDP page control | `chrome.debugger` + CDP | no direct Safari App Extension equivalent found; investigate Safari Web Inspector automation, WebKit, accessibility, and script-evaluated DOM actions | Low |
+| CDP page control | `chrome.debugger` + CDP | no direct Safari App Extension equivalent found; Safari Web Inspector extensions add developer UI, not a proven automation transport | Low |
 | Cursor overlay | injected content script and image asset | Safari content script with DOM overlay and extension resource asset | High |
 | File upload | Playwright file chooser path through browser backend | likely needs native UI automation or page-script plus user-mediated file input support | Low |
 
@@ -101,6 +118,7 @@ This option could help with:
 - `browser.scripting` and `browser.tabs` script/CSS injection commands
 - `browser.tabs.captureVisibleTab`
 - `browser.runtime.sendNativeMessage` between extension JavaScript and the containing app's native extension
+- `browser.devtools` and a `devtools_page` for a Safari Web Inspector extension
 
 This option does not erase the Safari gaps. Apple's compatibility guidance calls out unsupported or partial areas that matter to Chrome parity:
 
@@ -113,6 +131,34 @@ This option does not erase the Safari gaps. Apple's compatibility guidance calls
 - content scripts cannot send native messages directly; native messaging comes from background scripts or extension pages
 
 Treat a Safari Web Extension as a possible companion target, not an automatic replacement for the current Safari App Extension target.
+
+### Hybrid Target Option
+
+The current evidence supports treating a hybrid project as plausible, but not proven until we add a prototype target in Xcode.
+
+Apple documents both extension kinds as app-extension targets embedded in a containing app. A Safari App Extension is added to an existing macOS app as a Safari Extension target whose type is Safari App Extension. A Safari Web Extension is also packaged as an app extension inside a containing app, and Xcode can create or package one as a Safari Extension App.
+
+Apple also documents migration from a Safari App Extension to a Safari Web Extension as an explicit replacement behavior controlled by the `SFSafariAppExtensionBundleIdentifiersToReplace` key. That replacement key is important because it implies replacement is opt-in. If Savannah adds a Web Extension target and does not specify that key, the expected design is two separately enabled Safari extensions bundled in the same containing app.
+
+The open proof point is user experience and Safari settings behavior:
+
+- both extensions may appear as separate enablement rows in Safari Settings
+- each extension may need its own website/profile/private-browsing permissions
+- app-to-extension routing must address the correct extension bundle identifier
+- the containing app must present this as one product, even if Safari exposes two extension entries
+
+For now, the hybrid design should be a conscious stopgap candidate: keep `SafariTourGuide` for native Mac UI and `SafariServices` active-page messaging, and add a Web Extension only if it proves materially better for tab inventory, script injection parity, screenshots, native messaging, or Web Inspector experiments.
+
+### Safari Web Inspector Extension Option
+
+A Safari Web Inspector extension is not a general replacement for Chrome's `chrome.debugger` CDP bridge. It is a WebExtension-hosted developer tool that appears as a tab inside Safari Web Inspector. Safari requires the extension to create the inspector tab with `browser.devtools.panel.create()`, and the user views it through Develop > Show Web Inspector.
+
+That has two consequences for Savannah:
+
+- It may be useful for diagnostics, visibility, and experimental page inspection.
+- It is probably not UX-friendly as the primary Codex automation backend unless we prove Savannah can reliably open or attach the inspector for a target page without making the user babysit Safari's developer UI.
+
+The automatic-start question is still open. The Apple docs describe user-facing Web Inspector activation and target-page permission prompts, not a Codex-style background debugging transport. Until proven otherwise, Web Inspector extension work should be treated as a developer diagnostic add-on, not the first implementation path for ordinary browser tools.
 
 ### Safari Extension Role
 
@@ -184,7 +230,9 @@ Initial support can be narrower:
 - Can Savannah safely navigate an already-open Safari tab after creation, or should navigation be modeled as create-new-tab/open-window plus page-script commands only?
 - Is a Safari Web Extension target a better fit for cross-browser tool parity than a Safari App Extension target for tab inventory, tab updates, screenshots, and native messaging?
 - Would a hybrid design make sense: keep a Safari App Extension for native Mac UI/control, and add a Safari Web Extension target only if the WebExtensions/native-messaging surface gives materially better Codex parity?
+- Can Savannah bundle both a Safari App Extension and a Safari Web Extension without confusing Safari Settings, permissions, or user onboarding?
 - Can Safari Web Extension native messaging provide a closer analogue to Chrome native messaging while still using the containing app?
+- Can a Safari Web Inspector extension be opened or attached automatically enough to support Codex, or is it only a developer-facing diagnostic tool?
 - What level of DOM action can a Safari content script safely support without a CDP equivalent?
 - How should Savannah represent partial tab inventory so Codex tools do not overclaim control?
 
@@ -194,7 +242,9 @@ Initial support can be narrower:
 2. Add a small Savannah protocol sketch for Chrome-compatible command names and unsupported-command errors.
 3. Prototype content-script overlay ping/state messaging through the existing `script.js` and `SafariExtensionHandler`.
 4. Evaluate Safari Web Extension native messaging as an alternate or companion extension shape.
-5. Use the Chrome plugin live against Chrome to capture exact command responses for `getInfo`, `openTabs`, `claimTab`, and basic tab actions.
+5. Add a throwaway Safari Web Extension target in a disposable branch or Xcode checkpoint and verify whether it can coexist with the current Safari App Extension in Safari Settings.
+6. Evaluate whether a Safari Web Inspector extension can be opened and attached without a user-driven Develop menu flow.
+7. Use the Chrome plugin live against Chrome to capture exact command responses for `getInfo`, `openTabs`, `claimTab`, and basic tab actions.
 
 ## External References
 
@@ -207,5 +257,8 @@ Initial support can be narrower:
 - [Safari web extensions](https://developer.apple.com/documentation/safariservices/safari_web_extensions)
 - [Assessing your Safari web extension's browser compatibility](https://developer.apple.com/documentation/safariservices/assessing-your-safari-web-extension-s-browser-compatibility)
 - [Messaging between the app and JavaScript in a Safari web extension](https://developer.apple.com/documentation/safariservices/messaging_between_the_app_and_javascript_in_a_safari_web_extension)
+- [Adding a web development tool to Safari Web Inspector](https://developer.apple.com/documentation/safariservices/adding-a-web-development-tool-to-safari-web-inspector)
+- [Converting a Safari app extension to a Safari web extension](https://developer.apple.com/documentation/safariservices/converting-a-safari-app-extension-to-a-safari-web-extension)
+- [MDN devtools.panels.create](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/devtools/panels/create)
 - [MDN WebExtensions API compatibility](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Browser_support_for_JavaScript_APIs)
 - [The four types of Safari extension](https://underpassapp.com/news/2023-4-24.html)
