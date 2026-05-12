@@ -7,10 +7,18 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		498D88652FB3EECB006D0910 /* SpiderWeb.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 498D884D2FB3EECB006D0910 /* SpiderWeb.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		49BEC5022FB3BE4E001C9A53 /* SafariTourGuide.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 49BEC4F12FB3BE4E001C9A53 /* SafariTourGuide.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		498D88632FB3EECB006D0910 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 49BEC4B62FB3BDFB001C9A53 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 498D884C2FB3EECB006D0910;
+			remoteInfo = SpiderWeb;
+		};
 		49BEC4D12FB3BDFC001C9A53 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 49BEC4B62FB3BDFB001C9A53 /* Project object */;
@@ -41,6 +49,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 13;
 			files = (
+				498D88652FB3EECB006D0910 /* SpiderWeb.appex in Embed Foundation Extensions */,
 				49BEC5022FB3BE4E001C9A53 /* SafariTourGuide.appex in Embed Foundation Extensions */,
 			);
 			name = "Embed Foundation Extensions";
@@ -49,6 +58,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		498D884D2FB3EECB006D0910 /* SpiderWeb.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = SpiderWeb.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		49BEC4BE2FB3BDFB001C9A53 /* Savannah.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Savannah.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		49BEC4D02FB3BDFC001C9A53 /* SavannahTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SavannahTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		49BEC4DA2FB3BDFC001C9A53 /* SavannahUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SavannahUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -58,6 +68,13 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		498D88662FB3EECB006D0910 /* Exceptions for "SpiderWeb" folder in "SpiderWeb" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 498D884C2FB3EECB006D0910 /* SpiderWeb */;
+		};
 		49BEC5032FB3BE4E001C9A53 /* Exceptions for "SafariTourGuide" folder in "SafariTourGuide" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
@@ -71,6 +88,18 @@
 		498D88442FB3E8B9006D0910 /* docs */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = docs;
+			sourceTree = "<group>";
+		};
+		498D884E2FB3EECB006D0910 /* SpiderWeb */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				498D88662FB3EECB006D0910 /* Exceptions for "SpiderWeb" folder in "SpiderWeb" target */,
+			);
+			explicitFolders = (
+				Resources/_locales,
+				Resources/images,
+			);
+			path = SpiderWeb;
 			sourceTree = "<group>";
 		};
 		49BEC4C02FB3BDFB001C9A53 /* Savannah */ = {
@@ -99,6 +128,13 @@
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		498D884A2FB3EECB006D0910 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		49BEC4BB2FB3BDFB001C9A53 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -140,6 +176,7 @@
 				49BEC4D32FB3BDFC001C9A53 /* SavannahTests */,
 				49BEC4DD2FB3BDFC001C9A53 /* SavannahUITests */,
 				49BEC4F22FB3BE4E001C9A53 /* SafariTourGuide */,
+				498D884E2FB3EECB006D0910 /* SpiderWeb */,
 				49BEC4BF2FB3BDFB001C9A53 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -151,6 +188,7 @@
 				49BEC4D02FB3BDFC001C9A53 /* SavannahTests.xctest */,
 				49BEC4DA2FB3BDFC001C9A53 /* SavannahUITests.xctest */,
 				49BEC4F12FB3BE4E001C9A53 /* SafariTourGuide.appex */,
+				498D884D2FB3EECB006D0910 /* SpiderWeb.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -158,6 +196,28 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		498D884C2FB3EECB006D0910 /* SpiderWeb */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 498D88672FB3EECB006D0910 /* Build configuration list for PBXNativeTarget "SpiderWeb" */;
+			buildPhases = (
+				498D88492FB3EECB006D0910 /* Sources */,
+				498D884A2FB3EECB006D0910 /* Frameworks */,
+				498D884B2FB3EECB006D0910 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				498D884E2FB3EECB006D0910 /* SpiderWeb */,
+			);
+			name = SpiderWeb;
+			packageProductDependencies = (
+			);
+			productName = SpiderWeb;
+			productReference = 498D884D2FB3EECB006D0910 /* SpiderWeb.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 		49BEC4BD2FB3BDFB001C9A53 /* Savannah */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 49BEC4E42FB3BDFC001C9A53 /* Build configuration list for PBXNativeTarget "Savannah" */;
@@ -171,6 +231,7 @@
 			);
 			dependencies = (
 				49BEC5012FB3BE4E001C9A53 /* PBXTargetDependency */,
+				498D88642FB3EECB006D0910 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				49BEC4C02FB3BDFB001C9A53 /* Savannah */,
@@ -260,6 +321,9 @@
 				LastSwiftUpdateCheck = 2640;
 				LastUpgradeCheck = 2640;
 				TargetAttributes = {
+					498D884C2FB3EECB006D0910 = {
+						CreatedOnToolsVersion = 26.4.1;
+					};
 					49BEC4BD2FB3BDFB001C9A53 = {
 						CreatedOnToolsVersion = 26.4.1;
 					};
@@ -294,11 +358,19 @@
 				49BEC4CF2FB3BDFC001C9A53 /* SavannahTests */,
 				49BEC4D92FB3BDFC001C9A53 /* SavannahUITests */,
 				49BEC4F02FB3BE4E001C9A53 /* SafariTourGuide */,
+				498D884C2FB3EECB006D0910 /* SpiderWeb */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		498D884B2FB3EECB006D0910 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		49BEC4BC2FB3BDFB001C9A53 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -330,6 +402,13 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		498D88492FB3EECB006D0910 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		49BEC4BA2FB3BDFB001C9A53 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -361,6 +440,11 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		498D88642FB3EECB006D0910 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 498D884C2FB3EECB006D0910 /* SpiderWeb */;
+			targetProxy = 498D88632FB3EECB006D0910 /* PBXContainerItemProxy */;
+		};
 		49BEC4D22FB3BDFC001C9A53 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 49BEC4BD2FB3BDFB001C9A53 /* Savannah */;
@@ -379,6 +463,76 @@
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
+		498D88682FB3EECB006D0910 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = BC73766F69;
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_USER_SELECTED_FILES = readonly;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = SpiderWeb/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = SpiderWeb;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 15.6;
+				MARKETING_VERSION = 0.1;
+				OTHER_LDFLAGS = (
+					"-framework",
+					SafariServices,
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.galewilliams.Savannah.SpiderWeb;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		498D88692FB3EECB006D0910 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = BC73766F69;
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_USER_SELECTED_FILES = readonly;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = SpiderWeb/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = SpiderWeb;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 15.6;
+				MARKETING_VERSION = 0.1;
+				OTHER_LDFLAGS = (
+					"-framework",
+					SafariServices,
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.galewilliams.Savannah.SpiderWeb;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Release;
+		};
 		49BEC4E22FB3BDFC001C9A53 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -724,6 +878,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		498D88672FB3EECB006D0910 /* Build configuration list for PBXNativeTarget "SpiderWeb" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				498D88682FB3EECB006D0910 /* Debug */,
+				498D88692FB3EECB006D0910 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		49BEC4B92FB3BDFB001C9A53 /* Build configuration list for PBXProject "Savannah" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

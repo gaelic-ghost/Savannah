@@ -2,7 +2,7 @@
 
 Research date: 2026-05-12
 
-This note maps the Codex Chrome browser integration onto Savannah's current macOS app plus Safari App Extension shape.
+This note maps the Codex Chrome browser integration onto Savannah's current macOS app plus Safari extension shape.
 
 ## Current Savannah Shape
 
@@ -12,8 +12,11 @@ Savannah currently contains:
 - a Safari App Extension target named `SafariTourGuide`
 - a Safari content script resource named `script.js`
 - an `SFSafariExtensionHandler` subclass that receives Safari extension requests and script messages
+- a Safari Web Extension target named `SpiderWeb`
+- a Manifest V3 web extension resource set under `SpiderWeb/Resources`
+- a `SafariWebExtensionHandler` native app-extension entry point for WebExtension native messaging
 
-The current extension is a Safari App Extension, not a Safari Web Extension manifest-based target. That matters because Safari App Extensions use `SafariServices` classes such as `SFSafariExtensionHandler`, `SFSafariPage`, `SFSafariWindow`, and `SFSafariToolbarItem`, while Safari Web Extensions aim closer to the cross-browser WebExtensions API surface.
+Savannah now has both Safari extension shapes in the same Xcode project. `SafariTourGuide` is a Safari App Extension that uses `SafariServices` classes such as `SFSafariExtensionHandler`, `SFSafariPage`, `SFSafariWindow`, and `SFSafariToolbarItem`. `SpiderWeb` is a Safari Web Extension target that uses a manifest-based WebExtensions runtime closer to Chrome and Firefox extension APIs.
 
 Safari's extension families have different tradeoffs:
 
@@ -22,7 +25,7 @@ Safari's extension families have different tradeoffs:
 - Safari App Extensions are Mac-only, can provide native Mac UI in Safari, and use Safari's unique `SafariServices` API.
 - Safari Web Extensions are the cross-platform path, closer to Chrome and Firefox WebExtensions, but Safari does not support every WebExtensions API and still requires a native app wrapper for distribution.
 
-The current Savannah target is therefore on the native-Mac-control side of the Safari design space, not the maximum cross-browser-code-sharing side.
+The current Savannah project is therefore a real hybrid baseline: native-Mac-control through `SafariTourGuide`, and WebExtensions parity experiments through `SpiderWeb`.
 
 ## API Boundary
 
@@ -39,7 +42,7 @@ browser.runtime.sendNativeMessage
 browser.runtime.connectNative
 ```
 
-Those APIs belong to Safari Web Extensions. In Savannah terms, that means WebExtension-style tab inventory, screenshot capture, dynamic script injection, and native messaging are not features we can simply call from `SafariTourGuide` as it exists today. We either implement the smaller Safari App Extension surface honestly, add a Safari Web Extension companion target, or use a separate native fallback such as accessibility or another user-approved macOS automation path.
+Those APIs belong to Safari Web Extensions. In Savannah terms, that means WebExtension-style tab inventory, screenshot capture, dynamic script injection, and native messaging are not features we can simply call from `SafariTourGuide` as it exists today. We either implement the smaller Safari App Extension surface honestly, route WebExtension-shaped work through `SpiderWeb`, or use a separate native fallback such as Accessibility, Apple Events, AppleScript, or another user-approved macOS automation path.
 
 ## Design Goal
 
@@ -109,7 +112,18 @@ This is the closest Savannah equivalent to the Chrome plugin's bundled native ho
 
 ### Safari Web Extension Option
 
-A Safari Web Extension target may be useful if Savannah needs closer Chrome tool parity than the current Safari App Extension APIs expose. Apple's compatibility guidance says Safari Web Extensions use WebExtensions-style JavaScript APIs, can use native messaging through the containing app's native extension, and should be checked against Safari's supported API matrix.
+`SpiderWeb` is Savannah's Safari Web Extension target. It is the candidate surface for closer Chrome tool parity than the Safari App Extension APIs expose. Apple's compatibility guidance says Safari Web Extensions use WebExtensions-style JavaScript APIs, can use native messaging through the containing app's native extension, and should be checked against Safari's supported API matrix.
+
+The initial `SpiderWeb` template state is intentionally minimal:
+
+- manifest version 3
+- `background.js` as a module background script
+- `content.js` matched only on `*://example.com/*`
+- popup resources and toolbar icon assets
+- no declared extension permissions yet
+- native handler class `SafariWebExtensionHandler`
+
+That means `SpiderWeb` is present as a target, but its permissions and command runtime still need to be intentionally shaped before it can provide Codex-facing browser capabilities.
 
 This option could help with:
 
@@ -130,15 +144,13 @@ This option does not erase the Safari gaps. Apple's compatibility guidance calls
 - some WebExtensions navigation events and request-blocking features are unsupported or partial
 - content scripts cannot send native messages directly; native messaging comes from background scripts or extension pages
 
-Treat a Safari Web Extension as a possible companion target, not an automatic replacement for the current Safari App Extension target.
+Treat `SpiderWeb` as a companion target, not an automatic replacement for `SafariTourGuide`.
 
-### Hybrid Target Option
+### Hybrid Target Baseline
 
-The current evidence supports treating a hybrid project as plausible, but not proven until we add a prototype target in Xcode.
+The project now includes both a Safari App Extension and a Safari Web Extension. Apple documents both extension kinds as app-extension targets embedded in a containing app. A Safari App Extension is added to an existing macOS app as a Safari Extension target whose type is Safari App Extension. A Safari Web Extension is also packaged as an app extension inside a containing app, and Xcode can create or package one as a Safari Extension App.
 
-Apple documents both extension kinds as app-extension targets embedded in a containing app. A Safari App Extension is added to an existing macOS app as a Safari Extension target whose type is Safari App Extension. A Safari Web Extension is also packaged as an app extension inside a containing app, and Xcode can create or package one as a Safari Extension App.
-
-Apple also documents migration from a Safari App Extension to a Safari Web Extension as an explicit replacement behavior controlled by the `SFSafariAppExtensionBundleIdentifiersToReplace` key. That replacement key is important because it implies replacement is opt-in. If Savannah adds a Web Extension target and does not specify that key, the expected design is two separately enabled Safari extensions bundled in the same containing app.
+Apple also documents migration from a Safari App Extension to a Safari Web Extension as an explicit replacement behavior controlled by the `SFSafariAppExtensionBundleIdentifiersToReplace` key. That replacement key is important because it implies replacement is opt-in. `SpiderWeb` should not declare replacement of `SafariTourGuide` unless Savannah intentionally migrates away from the App Extension.
 
 The open proof point is user experience and Safari settings behavior:
 
@@ -147,11 +159,11 @@ The open proof point is user experience and Safari settings behavior:
 - app-to-extension routing must address the correct extension bundle identifier
 - the containing app must present this as one product, even if Safari exposes two extension entries
 
-For now, the hybrid design should be a conscious stopgap candidate: keep `SafariTourGuide` for native Mac UI and `SafariServices` active-page messaging, and add a Web Extension only if it proves materially better for tab inventory, script injection parity, screenshots, native messaging, or Web Inspector experiments.
+For now, the hybrid design should be treated as a conscious product split: keep `SafariTourGuide` for native Mac UI and `SafariServices` active-page messaging, and use `SpiderWeb` only where it proves materially better for tab inventory, script injection parity, screenshots, native messaging, or Web Inspector experiments.
 
 ### Safari Web Inspector Extension Option
 
-A Safari Web Inspector extension is not a general replacement for Chrome's `chrome.debugger` CDP bridge. It is a WebExtension-hosted developer tool that appears as a tab inside Safari Web Inspector. Safari requires the extension to create the inspector tab with `browser.devtools.panel.create()`, and the user views it through Develop > Show Web Inspector.
+A custom Safari Web Inspector tool can be added later through `SpiderWeb` if Savannah needs one. It is not a general replacement for Chrome's `chrome.debugger` CDP bridge. It is a WebExtension-hosted developer tool that appears as a tab inside Safari Web Inspector. Safari requires the extension to create the inspector tab with `browser.devtools.panel.create()`, and the user views it through Develop > Show Web Inspector.
 
 That has two consequences for Savannah:
 
@@ -159,6 +171,16 @@ That has two consequences for Savannah:
 - It is probably not UX-friendly as the primary Codex automation backend unless we prove Savannah can reliably open or attach the inspector for a target page without making the user babysit Safari's developer UI.
 
 The automatic-start question is still open. The Apple docs describe user-facing Web Inspector activation and target-page permission prompts, not a Codex-style background debugging transport. Until proven otherwise, Web Inspector extension work should be treated as a developer diagnostic add-on, not the first implementation path for ordinary browser tools.
+
+### Native Automation Gap Fillers
+
+Safari App Extension and Safari Web Extension APIs should stay first because they are user-visible, permissioned browser extension surfaces. If those APIs cannot provide a Chrome-equivalent capability, Savannah can evaluate native macOS automation paths case by case:
+
+- Accessibility for reading or driving visible Safari UI when extension APIs do not expose a browser-wide control.
+- Apple Events or AppleScript for Safari operations that Safari exposes through its scripting dictionary.
+- AppKit or Core Graphics event synthesis only for explicitly user-approved interaction paths where ordinary extension APIs cannot express the action.
+
+These should be fallback tools, not hidden compatibility shims. Any Codex-facing command backed by native automation should report its capability source and fail clearly when the required macOS permission is missing.
 
 ### Safari Extension Role
 
@@ -233,6 +255,7 @@ Initial support can be narrower:
 - Can Savannah bundle both a Safari App Extension and a Safari Web Extension without confusing Safari Settings, permissions, or user onboarding?
 - Can Safari Web Extension native messaging provide a closer analogue to Chrome native messaging while still using the containing app?
 - Can a Safari Web Inspector extension be opened or attached automatically enough to support Codex, or is it only a developer-facing diagnostic tool?
+- Which Chrome-equivalent gaps are better filled by Accessibility, Apple Events, or AppleScript instead of WebExtension APIs?
 - What level of DOM action can a Safari content script safely support without a CDP equivalent?
 - How should Savannah represent partial tab inventory so Codex tools do not overclaim control?
 
@@ -241,10 +264,11 @@ Initial support can be narrower:
 1. Inspect official Safari App Extension APIs for page/window/tab capabilities and document what is directly exposed.
 2. Add a small Savannah protocol sketch for Chrome-compatible command names and unsupported-command errors.
 3. Prototype content-script overlay ping/state messaging through the existing `script.js` and `SafariExtensionHandler`.
-4. Evaluate Safari Web Extension native messaging as an alternate or companion extension shape.
-5. Add a throwaway Safari Web Extension target in a disposable branch or Xcode checkpoint and verify whether it can coexist with the current Safari App Extension in Safari Settings.
-6. Evaluate whether a Safari Web Inspector extension can be opened and attached without a user-driven Develop menu flow.
-7. Use the Chrome plugin live against Chrome to capture exact command responses for `getInfo`, `openTabs`, `claimTab`, and basic tab actions.
+4. Evaluate `SpiderWeb` native messaging as the WebExtension bridge to the containing app.
+5. Verify how Safari Settings presents `SafariTourGuide` and `SpiderWeb` together, including website access, profile, and Private Browsing permissions.
+6. Evaluate whether a Safari Web Inspector extension is worth adding to `SpiderWeb`, especially whether it can be opened and attached without a user-driven Develop menu flow.
+7. Inventory Safari's AppleScript and Accessibility surfaces for the Chrome-equivalent gaps that neither extension target can cover cleanly.
+8. Use the Chrome plugin live against Chrome to capture exact command responses for `getInfo`, `openTabs`, `claimTab`, and basic tab actions.
 
 ## External References
 

@@ -28,11 +28,11 @@ TBD
 
 ## Quick Start
 
-Savannah is still early. Open `Savannah.xcodeproj` in Xcode to inspect the app target, tests, and Safari extension target while the product surface is being shaped.
+Savannah is still early. Open `Savannah.xcodeproj` in Xcode to inspect the app target, tests, Safari App Extension target, and Safari Web Extension target while the product surface is being shaped.
 
 ## Usage
 
-The repository currently contains the default SwiftUI app shell, Core Data starter model, app tests, UI tests, and a Safari extension target named `SafariTourGuide`.
+The repository currently contains the default SwiftUI app shell, Core Data starter model, app tests, UI tests, a Safari App Extension target named `SafariTourGuide`, and a Safari Web Extension target named `SpiderWeb`.
 
 ## Development
 
@@ -47,6 +47,7 @@ Use Xcode for project, target, scheme, and file-membership changes. Use `scripts
 ├── SavannahTests/
 ├── SavannahUITests/
 ├── SafariTourGuide/
+├── SpiderWeb/
 ├── scripts/repo-maintenance/
 ├── AGENTS.md
 ├── README.md
