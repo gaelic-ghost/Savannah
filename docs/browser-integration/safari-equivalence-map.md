@@ -79,11 +79,15 @@ Native automation is therefore a fallback capability source, not a hidden compat
 
 Savannah still needs an early proof of how it plugs into Codex:
 
-- Preferred proof: make Savannah look like a Browser Use backend so existing `browser_user_*`, `list_tabs`, `create_tab`, `selected_tab`, `playwright_*`, `cua_*`, and `dom_cua_*` tool families can stay intact.
-- Fallback proof: ship a regular Codex plugin with Savannah-specific commands and skill routing if Browser Use backend registration is not available or is too tightly coupled to OpenAI's bundled Chrome path.
+- Preferred proof: make Savannah look like a Chrome/Computer Use-style browser backend so existing `browser_user_*`, `list_tabs`, `create_tab`, `selected_tab`, `playwright_*`, `cua_*`, and `dom_cua_*` tool families can stay intact.
+- Fallback proof: ship a regular Codex plugin with Savannah-specific commands and skill routing if Chrome-like browser backend registration is not available or is too tightly coupled to OpenAI's bundled Chrome path.
 - Packaging proof: decide whether Savannah installs a local plugin copy from the app bundle, points Codex at a git/local plugin source, or offers both for development and release builds.
 
-The Browser Use path is potentially make-or-break for close Chrome parity because it determines whether Savannah can reuse the familiar browser tool family instead of introducing a parallel Savannah-specific command vocabulary.
+Codex Desktop's Browser Use product surface is the built-in in-app browser. Chrome is exposed separately under Computer Use alongside Any App, even though both paths use a shared browser-client API shape internally. Savannah should target Chrome parity, not the in-app-browser product role.
+
+The Chrome-like backend path is potentially make-or-break for close parity because it determines whether Savannah can reuse the familiar browser tool family instead of introducing a parallel Savannah-specific command vocabulary.
+
+See [Codex Chrome And Browser Runtime Integration Notes](codex-chrome-browser-runtime-notes.md) for the local plugin, public Codex repo, and public issue-tracker evidence behind this distinction.
 
 ## Chrome Capability To Safari Option Matrix
 

@@ -194,7 +194,7 @@ The client checks remote URL policy through ChatGPT backend site-status endpoint
 
 ## Codex-Facing Tool Families
 
-The plugin does not statically list all tools in its plugin manifest. `browser-client.mjs` builds a browser-use runtime and exposes a dynamic tool surface. The visible command families are:
+The plugin does not statically list all tools in its plugin manifest. `browser-client.mjs` builds a shared browser-client runtime, and the Chrome skill selects the `chrome` backend through that runtime. The visible command families are:
 
 ```text
 browser_user_open_tabs
@@ -222,4 +222,3 @@ Savannah should treat these names as the compatibility target unless a Safari li
 - [chrome.downloads](https://developer.chrome.com/docs/extensions/reference/api/downloads)
 - [Chrome extension manifest V3](https://developer.chrome.com/docs/extensions/develop/migrate/what-is-mv3)
 - [Codex Chrome extension user docs](https://developers.openai.com/codex/app/chrome-extension)
-

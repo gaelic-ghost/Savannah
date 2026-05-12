@@ -87,14 +87,14 @@ Planned
 ### Scope
 
 - [ ] Define Savannah's Codex-facing browser command contract using the Chrome plugin command names where behavior can match.
-- [ ] Prove whether Savannah can register as a Browser Use backend, or whether it needs a regular Codex plugin tool surface instead.
+- [ ] Prove whether Savannah can register as a Chrome/Computer Use-style browser backend, or whether it needs a regular Codex plugin tool surface instead.
 - [ ] Route browser capabilities through `SpiderWeb` first, then `SafariTourGuide`, then native macOS automation only for documented gaps.
 - [ ] Decide how the Savannah app installs or exposes its Codex plugin bundle from a local checkout, git source, or app-shipped plugin copy.
 
 ### Tickets
 
 - [ ] Prototype a minimal Codex plugin bundle with `plugin.json`, a Savannah skill, and a `savannah-client.mjs` connection script.
-- [ ] Test whether the plugin client can participate in the existing Browser Use runtime shape or must expose regular plugin commands.
+- [ ] Test whether the plugin client can participate in the existing Chrome/Computer Use browser runtime shape or must expose regular plugin commands.
 - [ ] Define a typed command protocol for `ping`, `getInfo`, tab inventory, tab creation, tab selection, navigation, session naming, and explicit unsupported-command errors.
 - [ ] Enable only the `SpiderWeb` WebExtension permissions needed for the first command slice.
 - [ ] Implement app-to-`SpiderWeb` native messaging for liveness and capability reporting.
