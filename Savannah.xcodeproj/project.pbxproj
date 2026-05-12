@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		49BEC5022FB3BE4E001C9A53 /* SafariTourGuide.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 49BEC4F12FB3BE4E001C9A53 /* SafariTourGuide.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		49BEC5092FB3C7DB001C9A53 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 49BEC5082FB3C7DB001C9A53 /* README.md */; };
+		49BEC50B2FB3C7E9001C9A53 /* ROADMAP.md in Resources */ = {isa = PBXBuildFile; fileRef = 49BEC50A2FB3C7E9001C9A53 /* ROADMAP.md */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -53,6 +55,8 @@
 		49BEC4D02FB3BDFC001C9A53 /* SavannahTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SavannahTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		49BEC4DA2FB3BDFC001C9A53 /* SavannahUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SavannahUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		49BEC4F12FB3BE4E001C9A53 /* SafariTourGuide.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = SafariTourGuide.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		49BEC5082FB3C7DB001C9A53 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
+		49BEC50A2FB3C7E9001C9A53 /* ROADMAP.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = ROADMAP.md; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -126,6 +130,8 @@
 		49BEC4B52FB3BDFB001C9A53 = {
 			isa = PBXGroup;
 			children = (
+				49BEC50A2FB3C7E9001C9A53 /* ROADMAP.md */,
+				49BEC5082FB3C7DB001C9A53 /* README.md */,
 				49BEC4C02FB3BDFB001C9A53 /* Savannah */,
 				49BEC4D32FB3BDFC001C9A53 /* SavannahTests */,
 				49BEC4DD2FB3BDFC001C9A53 /* SavannahUITests */,
@@ -314,6 +320,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				49BEC50B2FB3C7E9001C9A53 /* ROADMAP.md in Resources */,
+				49BEC5092FB3C7DB001C9A53 /* README.md in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
