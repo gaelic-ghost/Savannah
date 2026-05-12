@@ -64,6 +64,27 @@ cua_* and dom_cua_* commands where native or script-assisted pointer control can
 
 The practical product goal is compatibility at the Codex plugin boundary. Safari-specific implementation details should stay behind that boundary.
 
+## Implementation Priority
+
+Use this priority order before adding command behavior:
+
+1. Prefer `SpiderWeb` and Safari WebExtension APIs for browser-wide behavior that maps to Chrome extension APIs.
+2. Use `SafariTourGuide` and Safari App Extension APIs for `SafariServices` capabilities such as active window, active tab, active page, page properties, app-extension UI, and app-extension script messaging.
+3. Use Accessibility, Apple Events, AppleScript, or event synthesis only when neither extension surface provides the capability and the command can explain its required macOS permission clearly.
+4. Return an explicit unsupported-command error when the behavior cannot be implemented safely or truthfully.
+
+Native automation is therefore a fallback capability source, not a hidden compatibility layer. Any command backed by native automation should report that source in diagnostics or `getInfo` capability metadata.
+
+## Codex Integration Open Path
+
+Savannah still needs an early proof of how it plugs into Codex:
+
+- Preferred proof: make Savannah look like a Browser Use backend so existing `browser_user_*`, `list_tabs`, `create_tab`, `selected_tab`, `playwright_*`, `cua_*`, and `dom_cua_*` tool families can stay intact.
+- Fallback proof: ship a regular Codex plugin with Savannah-specific commands and skill routing if Browser Use backend registration is not available or is too tightly coupled to OpenAI's bundled Chrome path.
+- Packaging proof: decide whether Savannah installs a local plugin copy from the app bundle, points Codex at a git/local plugin source, or offers both for development and release builds.
+
+The Browser Use path is potentially make-or-break for close Chrome parity because it determines whether Savannah can reuse the familiar browser tool family instead of introducing a parallel Savannah-specific command vocabulary.
+
 ## Chrome Capability To Safari Option Matrix
 
 | Chrome capability | Chrome mechanism | Safari-native candidate | Current confidence |

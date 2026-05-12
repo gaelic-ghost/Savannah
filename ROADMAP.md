@@ -9,6 +9,7 @@ Use this roadmap to track milestone-level delivery through checklist sections.
 - [Milestone Progress](#milestone-progress)
 - [Milestone 0: Foundation](#milestone-0-foundation)
 - [Milestone 1: Product Shape](#milestone-1-product-shape)
+- [Milestone 2: Codex Browser Integration](#milestone-2-codex-browser-integration)
 - [Backlog Candidates](#backlog-candidates)
 - [History](#history)
 
@@ -19,6 +20,7 @@ Use this roadmap to track milestone-level delivery through checklist sections.
 ## Product Principles
 
 - Keep the app and Safari extension behavior grounded in the native Apple platform surfaces already present in the project.
+- Prefer Safari WebExtension APIs first for Chrome-equivalent browser control, use Safari App Extension APIs when `SafariServices` is the better fit, and use Accessibility, Apple Events, or AppleScript only to fill proven API gaps.
 - Preserve Xcode as the source of truth for project structure, target membership, schemes, and build settings.
 - Keep early milestones focused on proving the app shape before adding release or packaging complexity.
 
@@ -28,6 +30,7 @@ Use this section as a concise rollup of milestone names and statuses, not as a s
 
 - Milestone 0: Foundation - In Progress
 - Milestone 1: Product Shape - Planned
+- Milestone 2: Codex Browser Integration - Planned
 
 ## Milestone 0: Foundation
 
@@ -74,6 +77,36 @@ Planned
 
 - [ ] The app has one coherent end-to-end workflow that can be built, run, and explained from the README.
 - [ ] Safari extension responsibilities are explicit in code and docs.
+
+## Milestone 2: Codex Browser Integration
+
+### Status
+
+Planned
+
+### Scope
+
+- [ ] Define Savannah's Codex-facing browser command contract using the Chrome plugin command names where behavior can match.
+- [ ] Prove whether Savannah can register as a Browser Use backend, or whether it needs a regular Codex plugin tool surface instead.
+- [ ] Route browser capabilities through `SpiderWeb` first, then `SafariTourGuide`, then native macOS automation only for documented gaps.
+- [ ] Decide how the Savannah app installs or exposes its Codex plugin bundle from a local checkout, git source, or app-shipped plugin copy.
+
+### Tickets
+
+- [ ] Prototype a minimal Codex plugin bundle with `plugin.json`, a Savannah skill, and a `savannah-client.mjs` connection script.
+- [ ] Test whether the plugin client can participate in the existing Browser Use runtime shape or must expose regular plugin commands.
+- [ ] Define a typed command protocol for `ping`, `getInfo`, tab inventory, tab creation, tab selection, navigation, session naming, and explicit unsupported-command errors.
+- [ ] Enable only the `SpiderWeb` WebExtension permissions needed for the first command slice.
+- [ ] Implement app-to-`SpiderWeb` native messaging for liveness and capability reporting.
+- [ ] Implement app-to-`SafariTourGuide` messaging only for active-page or `SafariServices` capabilities that WebExtension APIs do not cover cleanly.
+- [ ] Inventory Accessibility, Apple Events, and AppleScript candidates for remaining gaps, including required permissions and operator-facing failure messages.
+
+### Exit Criteria
+
+- [ ] Savannah can answer a Codex-side `ping` and `getInfo` through the chosen plugin/backend path.
+- [ ] The backend reports a capability list that distinguishes WebExtension, App Extension, native automation, unsupported, and unproven capabilities.
+- [ ] At least one tab-oriented command works end to end through the preferred API path.
+- [ ] Unsupported commands fail with clear, human-readable messages and no silent native automation fallback.
 
 ## Backlog Candidates
 
