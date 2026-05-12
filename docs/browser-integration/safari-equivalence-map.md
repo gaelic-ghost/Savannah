@@ -53,13 +53,14 @@ The practical product goal is compatibility at the Codex plugin boundary. Safari
 | Page content script | `chrome.scripting.executeScript`, runtime content script | `SFSafariContentScript` declared in extension Info.plist | High |
 | Script-to-extension message | `chrome.runtime.sendMessage` | `safari.extension.dispatchMessage` to `SFSafariExtensionHandler.messageReceived` | High |
 | Extension-to-script message | `chrome.tabs.sendMessage` | `SFSafariPage.dispatchMessageToScript` | High |
-| Active tab and window model | `chrome.tabs`, `chrome.windows` | `SFSafariApplication.getActiveWindow`, `SFSafariWindow.getActiveTab`, `SFSafariPage.getPropertiesWithCompletionHandler` | Medium |
-| Existing tab inventory | `chrome.tabs.query` | Safari App Extension APIs appear narrower; may require native accessibility, AppleScript, or WebKit/Safari automation research | Low |
-| Tab creation/navigation | `chrome.tabs.create`, CDP navigation | Safari App Extension APIs may not expose full creation/navigation; investigate containing app URL open, AppleScript, accessibility, and Safari Web Extension alternatives | Low |
+| Active tab and window model | `chrome.tabs`, `chrome.windows` | `SFSafariApplication.getActiveWindow`, `SFSafariWindow.getActiveTab`, `SFSafariTab.getActivePage`, `SFSafariPage.getPropertiesWithCompletionHandler` | High for active context |
+| Existing tab inventory | `chrome.tabs.query` | Safari App Extension APIs proved active-window/active-tab access, but full all-window/all-tab enumeration is still unproven; may require native accessibility, AppleScript, Safari Web Extension APIs, or a user-observed-tab model | Low |
+| Tab creation/navigation | `chrome.tabs.create`, CDP navigation | `SFSafariApplication.openWindow(with:)`, `SFSafariWindow.openTab(with:makeActiveIfPossible:)`, active page messaging for script-side navigation only when safe | Medium |
 | Tab groups/session grouping | `chrome.tabGroups` | no direct Safari App Extension equivalent identified yet; may need Savannah-side logical grouping | Low |
 | Browser history | `chrome.history.search` | no direct Safari App Extension equivalent identified yet; likely unavailable without separate Safari/private data access | Low |
 | Downloads | `chrome.downloads` events and download commands | no direct Safari App Extension equivalent identified yet; native app can manage its own downloads, but not necessarily Safari's download list | Low |
-| CDP page control | `chrome.debugger` + CDP | no direct Safari App Extension equivalent; investigate Safari Web Inspector automation, WebKit, accessibility, and script-evaluated DOM actions | Low |
+| Window close | `chrome.windows.remove` or tab/window commands | `SFSafariWindow.close()` | Medium |
+| CDP page control | `chrome.debugger` + CDP | no direct Safari App Extension equivalent found; investigate Safari Web Inspector automation, WebKit, accessibility, and script-evaluated DOM actions | Low |
 | Cursor overlay | injected content script and image asset | Safari content script with DOM overlay and extension resource asset | High |
 | File upload | Playwright file chooser path through browser backend | likely needs native UI automation or page-script plus user-mediated file input support | Low |
 
@@ -88,6 +89,30 @@ The macOS app can own process-level capabilities that the Safari extension canno
 - permission prompts or operator-visible status UI
 
 This is the closest Savannah equivalent to the Chrome plugin's bundled native host plus extension-host binary.
+
+### Safari Web Extension Option
+
+A Safari Web Extension target may be useful if Savannah needs closer Chrome tool parity than the current Safari App Extension APIs expose. Apple's compatibility guidance says Safari Web Extensions use WebExtensions-style JavaScript APIs, can use native messaging through the containing app's native extension, and should be checked against Safari's supported API matrix.
+
+This option could help with:
+
+- `browser.tabs`-style tab commands
+- `browser.windows`-style window commands on macOS
+- `browser.scripting` and `browser.tabs` script/CSS injection commands
+- `browser.tabs.captureVisibleTab`
+- `browser.runtime.sendNativeMessage` between extension JavaScript and the containing app's native extension
+
+This option does not erase the Safari gaps. Apple's compatibility guidance calls out unsupported or partial areas that matter to Chrome parity:
+
+- `scripting.executeScript` does not support `injectImmediately`
+- dynamic content script registration is Safari-version-dependent
+- `tabs.move` is unsupported
+- `tabs.highlighted` is unsupported
+- `tabs.update` does not support `highlighted`
+- some WebExtensions navigation events and request-blocking features are unsupported or partial
+- content scripts cannot send native messages directly; native messaging comes from background scripts or extension pages
+
+Treat a Safari Web Extension as a possible companion target, not an automatic replacement for the current Safari App Extension target.
 
 ### Safari Extension Role
 
@@ -144,10 +169,10 @@ Initial support can be narrower:
 | `getInfo` | report backend type, supported capabilities, app version, extension version |
 | `nameSession` | store Savannah-side session title |
 | `moveMouse` | update script overlay cursor state for the active Safari page when available |
-| `getTabs` | report only tabs/pages Savannah can observe, with explicit partial-inventory metadata |
-| `getUserTabs` | same as `getTabs` until broader Safari tab inventory is proven |
+| `getTabs` | report the active window/tab/page plus any Savannah-created or observed tabs; include explicit partial-inventory metadata |
+| `getUserTabs` | same as `getTabs` until full Safari tab enumeration is proven |
 | `claimUserTab` | claim only an observed page; otherwise return unsupported/not-observable |
-| `createTab` | unsupported until a Safari-safe creation path is proven |
+| `createTab` | use `SFSafariWindow.openTab(with:makeActiveIfPossible:)` when there is an active Safari window; otherwise use `SFSafariApplication.openWindow(with:)` |
 | `getUserHistory` | unsupported unless a supported Safari or user-approved native source is proven |
 | `attach` / `detach` | start/stop session tracking for an observable page |
 | `executeCdp` | unsupported; keep name for compatibility but report that Safari has no CDP bridge |
@@ -156,8 +181,8 @@ Initial support can be narrower:
 ## Key Open Questions
 
 - Can a Safari App Extension enumerate all windows and tabs, or only the active context Safari exposes to the extension?
-- Can Savannah safely open or navigate Safari tabs through first-party APIs, or does this require an AppleScript/accessibility fallback?
-- Is a Safari Web Extension target a better fit for cross-browser tool parity than a Safari App Extension target?
+- Can Savannah safely navigate an already-open Safari tab after creation, or should navigation be modeled as create-new-tab/open-window plus page-script commands only?
+- Is a Safari Web Extension target a better fit for cross-browser tool parity than a Safari App Extension target for tab inventory, tab updates, screenshots, and native messaging?
 - Would a hybrid design make sense: keep a Safari App Extension for native Mac UI/control, and add a Safari Web Extension target only if the WebExtensions/native-messaging surface gives materially better Codex parity?
 - Can Safari Web Extension native messaging provide a closer analogue to Chrome native messaging while still using the containing app?
 - What level of DOM action can a Safari content script safely support without a CDP equivalent?
@@ -174,10 +199,13 @@ Initial support can be narrower:
 ## External References
 
 - [Safari app extensions](https://developer.apple.com/documentation/safariservices/safari_app_extensions)
+- [SFSafariApplication](https://developer.apple.com/documentation/safariservices/sfsafariapplication)
 - [SFSafariExtensionHandler](https://developer.apple.com/documentation/safariservices/sfsafariextensionhandler)
 - [SFSafariPage](https://developer.apple.com/documentation/safariservices/sfsafaripage)
+- [SFSafariTab](https://developer.apple.com/documentation/safariservices/sfsafaritab)
 - [SFSafariWindow](https://developer.apple.com/documentation/safariservices/sfsafariwindow)
 - [Safari web extensions](https://developer.apple.com/documentation/safariservices/safari_web_extensions)
+- [Assessing your Safari web extension's browser compatibility](https://developer.apple.com/documentation/safariservices/assessing-your-safari-web-extension-s-browser-compatibility)
 - [Messaging between the app and JavaScript in a Safari web extension](https://developer.apple.com/documentation/safariservices/messaging_between_the_app_and_javascript_in_a_safari_web_extension)
 - [MDN WebExtensions API compatibility](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Browser_support_for_JavaScript_APIs)
 - [The four types of Safari extension](https://underpassapp.com/news/2023-4-24.html)
