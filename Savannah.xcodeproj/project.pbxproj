@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		49BEC5022FB3BE4E001C9A53 /* SafariTourGuide.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 49BEC4F12FB3BE4E001C9A53 /* SafariTourGuide.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		49BEC4D12FB3BDFC001C9A53 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -21,13 +25,45 @@
 			remoteGlobalIDString = 49BEC4BD2FB3BDFB001C9A53;
 			remoteInfo = Savannah;
 		};
+		49BEC5002FB3BE4E001C9A53 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 49BEC4B62FB3BDFB001C9A53 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 49BEC4F02FB3BE4E001C9A53;
+			remoteInfo = SafariTourGuide;
+		};
 /* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		49BEC5072FB3BE4E001C9A53 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				49BEC5022FB3BE4E001C9A53 /* SafariTourGuide.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		49BEC4BE2FB3BDFB001C9A53 /* Savannah.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Savannah.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		49BEC4D02FB3BDFC001C9A53 /* SavannahTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SavannahTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		49BEC4DA2FB3BDFC001C9A53 /* SavannahUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SavannahUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		49BEC4F12FB3BE4E001C9A53 /* SafariTourGuide.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = SafariTourGuide.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		49BEC5032FB3BE4E001C9A53 /* Exceptions for "SafariTourGuide" folder in "SafariTourGuide" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 49BEC4F02FB3BE4E001C9A53 /* SafariTourGuide */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		49BEC4C02FB3BDFB001C9A53 /* Savannah */ = {
@@ -43,6 +79,14 @@
 		49BEC4DD2FB3BDFC001C9A53 /* SavannahUITests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = SavannahUITests;
+			sourceTree = "<group>";
+		};
+		49BEC4F22FB3BE4E001C9A53 /* SafariTourGuide */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				49BEC5032FB3BE4E001C9A53 /* Exceptions for "SafariTourGuide" folder in "SafariTourGuide" target */,
+			);
+			path = SafariTourGuide;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -69,6 +113,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		49BEC4EE2FB3BE4E001C9A53 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -78,6 +129,7 @@
 				49BEC4C02FB3BDFB001C9A53 /* Savannah */,
 				49BEC4D32FB3BDFC001C9A53 /* SavannahTests */,
 				49BEC4DD2FB3BDFC001C9A53 /* SavannahUITests */,
+				49BEC4F22FB3BE4E001C9A53 /* SafariTourGuide */,
 				49BEC4BF2FB3BDFB001C9A53 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -88,6 +140,7 @@
 				49BEC4BE2FB3BDFB001C9A53 /* Savannah.app */,
 				49BEC4D02FB3BDFC001C9A53 /* SavannahTests.xctest */,
 				49BEC4DA2FB3BDFC001C9A53 /* SavannahUITests.xctest */,
+				49BEC4F12FB3BE4E001C9A53 /* SafariTourGuide.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -102,10 +155,12 @@
 				49BEC4BA2FB3BDFB001C9A53 /* Sources */,
 				49BEC4BB2FB3BDFB001C9A53 /* Frameworks */,
 				49BEC4BC2FB3BDFB001C9A53 /* Resources */,
+				49BEC5072FB3BE4E001C9A53 /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				49BEC5012FB3BE4E001C9A53 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				49BEC4C02FB3BDFB001C9A53 /* Savannah */,
@@ -163,6 +218,28 @@
 			productReference = 49BEC4DA2FB3BDFC001C9A53 /* SavannahUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
+		49BEC4F02FB3BE4E001C9A53 /* SafariTourGuide */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 49BEC5042FB3BE4E001C9A53 /* Build configuration list for PBXNativeTarget "SafariTourGuide" */;
+			buildPhases = (
+				49BEC4ED2FB3BE4E001C9A53 /* Sources */,
+				49BEC4EE2FB3BE4E001C9A53 /* Frameworks */,
+				49BEC4EF2FB3BE4E001C9A53 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				49BEC4F22FB3BE4E001C9A53 /* SafariTourGuide */,
+			);
+			name = SafariTourGuide;
+			packageProductDependencies = (
+			);
+			productName = SafariTourGuide;
+			productReference = 49BEC4F12FB3BE4E001C9A53 /* SafariTourGuide.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -184,6 +261,9 @@
 						CreatedOnToolsVersion = 26.4.1;
 						TestTargetID = 49BEC4BD2FB3BDFB001C9A53;
 					};
+					49BEC4F02FB3BE4E001C9A53 = {
+						CreatedOnToolsVersion = 26.4.1;
+					};
 				};
 			};
 			buildConfigurationList = 49BEC4B92FB3BDFB001C9A53 /* Build configuration list for PBXProject "Savannah" */;
@@ -203,6 +283,7 @@
 				49BEC4BD2FB3BDFB001C9A53 /* Savannah */,
 				49BEC4CF2FB3BDFC001C9A53 /* SavannahTests */,
 				49BEC4D92FB3BDFC001C9A53 /* SavannahUITests */,
+				49BEC4F02FB3BE4E001C9A53 /* SafariTourGuide */,
 			);
 		};
 /* End PBXProject section */
@@ -223,6 +304,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		49BEC4D82FB3BDFC001C9A53 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		49BEC4EF2FB3BE4E001C9A53 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -253,6 +341,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		49BEC4ED2FB3BE4E001C9A53 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -265,6 +360,11 @@
 			isa = PBXTargetDependency;
 			target = 49BEC4BD2FB3BDFB001C9A53 /* Savannah */;
 			targetProxy = 49BEC4DB2FB3BDFC001C9A53 /* PBXContainerItemProxy */;
+		};
+		49BEC5012FB3BE4E001C9A53 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 49BEC4F02FB3BE4E001C9A53 /* SafariTourGuide */;
+			targetProxy = 49BEC5002FB3BE4E001C9A53 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -330,6 +430,7 @@
 				SDKROOT = macosx;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 6.0;
 			};
 			name = Debug;
 		};
@@ -386,6 +487,7 @@
 				MTL_FAST_MATH = YES;
 				SDKROOT = macosx;
 				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_VERSION = 6.0;
 			};
 			name = Release;
 		};
@@ -403,12 +505,14 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "Savannah for Safari";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MACOSX_DEPLOYMENT_TARGET = 15.6;
+				MARKETING_VERSION = 0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.galewilliams.Savannah;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
@@ -417,7 +521,7 @@
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 5.0;
+				SWIFT_VERSION = 6.0;
 			};
 			name = Debug;
 		};
@@ -435,12 +539,14 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "Savannah for Safari";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MACOSX_DEPLOYMENT_TARGET = 15.6;
+				MARKETING_VERSION = 0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.galewilliams.Savannah;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
@@ -449,7 +555,7 @@
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 5.0;
+				SWIFT_VERSION = 6.0;
 			};
 			name = Release;
 		};
@@ -461,7 +567,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = BC73766F69;
 				GENERATE_INFOPLIST_FILE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 26.4;
+				MACOSX_DEPLOYMENT_TARGET = 15.6;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.galewilliams.SavannahTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -469,7 +575,7 @@
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 5.0;
+				SWIFT_VERSION = 6.0;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Savannah.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Savannah";
 			};
 			name = Debug;
@@ -482,7 +588,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = BC73766F69;
 				GENERATE_INFOPLIST_FILE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 26.4;
+				MACOSX_DEPLOYMENT_TARGET = 15.6;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.galewilliams.SavannahTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -490,7 +596,7 @@
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 5.0;
+				SWIFT_VERSION = 6.0;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Savannah.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Savannah";
 			};
 			name = Release;
@@ -502,6 +608,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = BC73766F69;
 				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 15.6;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.galewilliams.SavannahUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -509,7 +616,7 @@
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 5.0;
+				SWIFT_VERSION = 6.0;
 				TEST_TARGET_NAME = Savannah;
 			};
 			name = Debug;
@@ -521,6 +628,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = BC73766F69;
 				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 15.6;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.galewilliams.SavannahUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -528,8 +636,78 @@
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 5.0;
+				SWIFT_VERSION = 6.0;
 				TEST_TARGET_NAME = Savannah;
+			};
+			name = Release;
+		};
+		49BEC5052FB3BE4E001C9A53 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = BC73766F69;
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_USER_SELECTED_FILES = readonly;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = SafariTourGuide/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = TourGuide;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 15.6;
+				MARKETING_VERSION = 0.1;
+				OTHER_LDFLAGS = (
+					"-framework",
+					SafariServices,
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.galewilliams.Savannah.SafariTourGuide;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		49BEC5062FB3BE4E001C9A53 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = BC73766F69;
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_USER_SELECTED_FILES = readonly;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = SafariTourGuide/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = TourGuide;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 15.6;
+				MARKETING_VERSION = 0.1;
+				OTHER_LDFLAGS = (
+					"-framework",
+					SafariServices,
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.galewilliams.Savannah.SafariTourGuide;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 6.0;
 			};
 			name = Release;
 		};
@@ -568,6 +746,15 @@
 			buildConfigurations = (
 				49BEC4EB2FB3BDFC001C9A53 /* Debug */,
 				49BEC4EC2FB3BDFC001C9A53 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		49BEC5042FB3BE4E001C9A53 /* Build configuration list for PBXNativeTarget "SafariTourGuide" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				49BEC5052FB3BE4E001C9A53 /* Debug */,
+				49BEC5062FB3BE4E001C9A53 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
