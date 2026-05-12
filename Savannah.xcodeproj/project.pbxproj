@@ -8,8 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		49BEC5022FB3BE4E001C9A53 /* SafariTourGuide.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 49BEC4F12FB3BE4E001C9A53 /* SafariTourGuide.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
-		49BEC5092FB3C7DB001C9A53 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 49BEC5082FB3C7DB001C9A53 /* README.md */; };
-		49BEC50B2FB3C7E9001C9A53 /* ROADMAP.md in Resources */ = {isa = PBXBuildFile; fileRef = 49BEC50A2FB3C7E9001C9A53 /* ROADMAP.md */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -320,8 +318,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				49BEC50B2FB3C7E9001C9A53 /* ROADMAP.md in Resources */,
-				49BEC5092FB3C7DB001C9A53 /* README.md in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
