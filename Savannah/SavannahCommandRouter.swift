@@ -119,6 +119,10 @@ nonisolated final class SavannahCommandRouter {
 
     private func infoPayload() -> [String: JSONValue] {
         let safariExtensions = SavannahSafariExtensionMonitor.report()
+        let webExtensionBridge = SavannahExtensionBridgeStore.loadStatePayload()
+        let tabCapabilitySource = webExtensionBridge.object?["available"] == .bool(true)
+            ? JSONValue.string("web-extension")
+            : JSONValue.string("unproven")
 
         return [
             "backendId": .string("savannah"),
@@ -131,12 +135,12 @@ nonisolated final class SavannahCommandRouter {
             ]),
             "extensions": .object(safariExtensions.summary),
             "safariExtensionStates": .object(safariExtensions.details),
-            "webExtensionBridge": SavannahExtensionBridgeStore.loadStatePayload(),
+            "webExtensionBridge": webExtensionBridge,
             "capabilitySources": .object([
                 "ping": .string("app"),
                 "getInfo": .string("app"),
-                "getTabs": .string("unproven"),
-                "getUserTabs": .string("unproven"),
+                "getTabs": tabCapabilitySource,
+                "getUserTabs": tabCapabilitySource,
                 "getUserHistory": .string("unsupported"),
                 "claimUserTab": .string("unproven"),
                 "createTab": .string("unproven"),
