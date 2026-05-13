@@ -48,12 +48,7 @@ nonisolated final class SavannahCommandRouter {
                 "sessionName": .string(sessionName ?? "")
             ])
         case "getTabs", "getUserTabs":
-            return success(request, result: [
-                "tabs": .array([]),
-                "inventory": .string("empty"),
-                "capabilitySource": .string("unproven"),
-                "message": .string("Savannah is reachable over its Unix socket, but Safari tab inventory is not implemented yet.")
-            ])
+            return success(request, result: SavannahExtensionBridgeStore.loadTabInventoryPayload())
         case "finalizeTabs":
             return success(request, result: [
                 "ok": .bool(true),
@@ -112,7 +107,9 @@ nonisolated final class SavannahCommandRouter {
     }
 
     private func infoPayload() -> [String: JSONValue] {
-        [
+        let safariExtensions = SavannahSafariExtensionMonitor.report()
+
+        return [
             "backendId": .string("savannah"),
             "backendKind": .string("chrome-compatible-proof"),
             "protocolVersion": .string("0.1.0"),
@@ -121,10 +118,9 @@ nonisolated final class SavannahCommandRouter {
                 "socketPath": .string(SavannahTransportPaths.socketURL.path),
                 "authenticated": .bool(true)
             ]),
-            "extensions": .object([
-                "spiderWeb": .string("unproven"),
-                "safariTourGuide": .string("unproven")
-            ]),
+            "extensions": .object(safariExtensions.summary),
+            "safariExtensionStates": .object(safariExtensions.details),
+            "webExtensionBridge": SavannahExtensionBridgeStore.loadStatePayload(),
             "capabilitySources": .object([
                 "ping": .string("app"),
                 "getInfo": .string("app"),

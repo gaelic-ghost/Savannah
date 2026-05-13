@@ -165,20 +165,31 @@ The first Codex-to-app transport is a user-local Unix domain socket carrying len
 
 No additional app sandbox exception is expected for the socket proof. Safari extension installation is a separate operator step: build and run the containing app once, enable the extension in Safari Settings > Extensions, and enable unsigned extension development in Safari's Developer settings if the development build does not appear.
 
+Shared browser state is a separate app-extension concern. `SpiderWeb` writes native-messaging tab snapshots into the App Group container `group.com.galewilliams.Savannah`, and the app reads that file when answering `getTabs` and `getUserTabs`. The first snapshot path is:
+
+```text
+~/Library/Group Containers/group.com.galewilliams.Savannah/savannah-codex/spiderweb-state.json
+```
+
+If the App Group is not available, Savannah reports that state explicitly in `webExtensionBridge`. In the current local proof, the App Group container is available and Safari reports both bundled extensions through `SFSafariExtensionManager`, but both are disabled until enabled in Safari Settings.
+
 ### Safari Web Extension Option
 
 `SpiderWeb` is Savannah's Safari Web Extension target. It is the candidate surface for closer Chrome tool parity than the Safari App Extension APIs expose. Apple's compatibility guidance says Safari Web Extensions use WebExtensions-style JavaScript APIs, can use native messaging through the containing app's native extension, and should be checked against Safari's supported API matrix.
 
-The initial `SpiderWeb` template state is intentionally minimal:
+The initial `SpiderWeb` implementation now includes a first native-messaging tab snapshot path:
 
 - manifest version 3
 - `background.js` as a module background script
 - `content.js` matched only on `*://example.com/*`
 - popup resources and toolbar icon assets
-- no declared extension permissions yet
+- `nativeMessaging` and `tabs` permissions
 - native handler class `SafariWebExtensionHandler`
+- `browser.tabs.query({})` snapshots from the background script
+- `browser.runtime.sendNativeMessage(...)` delivery to the native handler
+- App Group JSON snapshot writing for the containing app to read
 
-That means `SpiderWeb` is present as a target, but its permissions and command runtime still need to be intentionally shaped before it can provide Codex-facing browser capabilities.
+That means `SpiderWeb` is now the first WebExtension-backed tab inventory candidate. The app still treats the inventory as `unproven` until Safari runs the enabled extension and a snapshot appears in shared state.
 
 This option could help with:
 

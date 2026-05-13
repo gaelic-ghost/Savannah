@@ -96,8 +96,8 @@ Planned
 - [x] Prototype a minimal Codex plugin bundle with `plugin.json`, a Savannah skill, and a `savannah-client.mjs` connection script.
 - [ ] Test whether the plugin client can participate in the existing Chrome/Computer Use browser runtime shape or must expose regular plugin commands.
 - [ ] Define a typed command protocol for `ping`, `getInfo`, tab inventory, tab creation, tab selection, navigation, session naming, and explicit unsupported-command errors.
-- [ ] Enable only the `SpiderWeb` WebExtension permissions needed for the first command slice.
-- [ ] Implement app-to-`SpiderWeb` native messaging for liveness and capability reporting.
+- [x] Enable only the `SpiderWeb` WebExtension permissions needed for the first command slice.
+- [x] Implement `SpiderWeb` native messaging for tab snapshot liveness and capability reporting.
 - [ ] Implement app-to-`SafariTourGuide` messaging only for active-page or `SafariServices` capabilities that WebExtension APIs do not cover cleanly.
 - [ ] Inventory Accessibility, Apple Events, and AppleScript candidates for remaining gaps, including required permissions and operator-facing failure messages.
 

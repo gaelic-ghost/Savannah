@@ -17,7 +17,7 @@ Do not claim Safari tab control is available until the app and extension report 
 
 The plugin connects to the running Savannah app through a user-local Unix domain socket at `~/Library/Containers/com.galewilliams.Savannah/Data/tmp/savannah-codex/codex.sock`. The app writes the pairing token next to it as `codex-token`. If the app is not running, proof commands may return explicit plugin-local fallback responses. Set `SAVANNAH_REQUIRE_APP=1` when a command must fail instead of falling back.
 
-The socket proof should not require extra app sandbox exceptions. Safari extension enablement is separate: build and run the containing app once, then enable `SpiderWeb` or `SafariTourGuide` in Safari Settings > Extensions. If a development extension is not visible, enable unsigned extensions in Safari's Developer settings.
+The socket proof should not require extra app sandbox exceptions. `SpiderWeb` tab snapshots use the App Group container `group.com.galewilliams.Savannah`; if the App Group entitlement or container is missing, `getInfo` reports that in `webExtensionBridge`. Safari extension enablement is separate: build and run the containing app once, then enable `SpiderWeb` or `SafariTourGuide` in Safari Settings > Extensions. If a development extension is not visible, enable unsigned extensions in Safari's Developer settings.
 
 ## Runtime Shape
 

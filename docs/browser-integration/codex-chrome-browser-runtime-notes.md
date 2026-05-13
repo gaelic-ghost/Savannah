@@ -249,6 +249,14 @@ This socket proof does not require extra app sandbox exceptions. If Savannah lat
 - During unsigned development, enable Safari's developer setting for unsigned extensions if Safari does not show the extension.
 - In Safari 17 or later, also check profile-specific extension enablement when testing with Safari profiles.
 
+`SpiderWeb` native messaging uses the App Group container `group.com.galewilliams.Savannah` for extension-to-app tab snapshots:
+
+```text
+~/Library/Group Containers/group.com.galewilliams.Savannah/savannah-codex/spiderweb-state.json
+```
+
+That App Group is separate from the Codex socket sandbox decision. The socket can stay inside the Savannah app container, but browser state shared by the Safari Web Extension and containing app needs a shared container. If the App Group entitlement is missing from either the Savannah app target or the `SpiderWeb` target, `getInfo` reports the missing shared state instead of pretending tab inventory is available.
+
 The app owns:
 
 - backend liveness
@@ -282,7 +290,7 @@ getInfo -> backend id, app version, extension state, capability sources
 getTabs -> at least one truthful tab/page inventory shape, even if partial
 ```
 
-`ping` and `getInfo` first try the Savannah app over the Unix socket. When the app is not running, the plugin returns explicit plugin-local fallback responses unless `SAVANNAH_REQUIRE_APP=1` is set. `getTabs` returns an explicit `unproven` inventory until Savannah connects to `SpiderWeb`, `SafariTourGuide`, or native automation.
+`ping` and `getInfo` first try the Savannah app over the Unix socket. When the app is not running, the plugin returns explicit plugin-local fallback responses unless `SAVANNAH_REQUIRE_APP=1` is set. `getTabs` and `getUserTabs` read the latest `SpiderWeb` tab snapshot when the WebExtension has written one; otherwise they return an explicit `unproven` empty inventory with the bridge-state reason.
 
 Success for the next slice means Codex can call Savannah through the chosen plugin/backend path and Savannah can report a capability list that distinguishes:
 
