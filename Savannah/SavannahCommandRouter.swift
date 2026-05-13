@@ -9,6 +9,7 @@ import Foundation
 
 nonisolated final class SavannahCommandRouter {
     private let pairingToken: String
+    private let stateLock = NSLock()
     private var sessionName: String?
 
     init(pairingToken: String) {
@@ -42,10 +43,10 @@ nonisolated final class SavannahCommandRouter {
         case "getInfo":
             return success(request, result: infoPayload())
         case "nameSession":
-            sessionName = request.params?.object?["name"]?.string
+            let sessionName = updateSessionName(request.params?.object?["name"]?.string)
             return success(request, result: [
                 "ok": .bool(true),
-                "sessionName": .string(sessionName ?? "")
+                "sessionName": .string(sessionName)
             ])
         case "getTabs", "getUserTabs":
             return success(request, result: SavannahExtensionBridgeStore.loadTabInventoryPayload())
@@ -104,6 +105,16 @@ nonisolated final class SavannahCommandRouter {
             "protocolVersion": .string("0.1.0"),
             "transport": .string("unix-socket-json-rpc")
         ])
+    }
+
+    private func updateSessionName(_ name: String?) -> String {
+        stateLock.lock()
+        defer {
+            stateLock.unlock()
+        }
+
+        sessionName = name
+        return sessionName ?? ""
     }
 
     private func infoPayload() -> [String: JSONValue] {
