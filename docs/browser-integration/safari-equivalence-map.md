@@ -46,7 +46,32 @@ Those APIs belong to Safari Web Extensions. In Savannah terms, that means WebExt
 
 ## Design Goal
 
-Savannah should preserve the Codex-facing browser tool names and command shapes from the Chrome plugin as closely as possible:
+Savannah should preserve the Codex-facing JavaScript browser object surface from the Chrome plugin as closely as possible. This is the primary compatibility goal because Codex is likely to be better at using OpenAI's own trained and documented tool shapes than a new Savannah-specific command vocabulary.
+
+The target surface is the object model that the Chrome skill exposes after bootstrap:
+
+```text
+agent.browsers.get(...)
+browser.nameSession(...)
+browser.user.openTabs()
+browser.user.claimTab(...)
+browser.user.history(...)
+browser.tabs.selected()
+browser.tabs.new()
+browser.tabs.list()
+browser.tabs.get(...)
+browser.tabs.finalize(...)
+tab.goto(...)
+tab.close()
+tab.title()
+tab.url()
+tab.playwright.*
+tab.cua.*
+tab.dom_cua.*
+tab.dev.*
+```
+
+Under that JavaScript object surface, Savannah should keep the lower-level command names and command shapes from the Chrome plugin as closely as possible:
 
 ```text
 browser_user_open_tabs
@@ -62,7 +87,7 @@ playwright_* commands where a page automation backend can support them
 cua_* and dom_cua_* commands where native or script-assisted pointer control can support them
 ```
 
-The practical product goal is compatibility at the Codex plugin boundary. Safari-specific implementation details should stay behind that boundary.
+The practical product goal is compatibility at the Codex plugin boundary. Safari-specific implementation details should stay behind that boundary. The transport does not need to be OpenAI's private native-pipe bridge. Savannah can use a Savannah-owned endpoint, MCP server, socket, XPC helper, or other native app route as long as the agent-facing browser object behaves like Chrome's where supported and fails explicitly where Safari cannot match it.
 
 ## Implementation Priority
 
@@ -79,13 +104,14 @@ Native automation is therefore a fallback capability source, not a hidden compat
 
 Savannah still needs an early proof of how it plugs into Codex:
 
-- Preferred proof: make Savannah look like a Chrome/Computer Use-style browser backend so existing `browser_user_*`, `list_tabs`, `create_tab`, `selected_tab`, `playwright_*`, `cua_*`, and `dom_cua_*` tool families can stay intact.
-- Fallback proof: ship a regular Codex plugin with Savannah-specific commands and skill routing if Chrome-like browser backend registration is not available or is too tightly coupled to OpenAI's bundled Chrome path.
+- Preferred proof: make Savannah expose a Chrome-shaped JavaScript browser object so existing `browser.user.*`, `browser.tabs.*`, `tab.playwright.*`, `tab.cua.*`, `tab.dom_cua.*`, and `tab.dev.*` usage patterns stay intact.
+- Compatibility proof: keep lower-level Chrome command names such as `getUserTabs`, `claimUserTab`, `createTab`, `finalizeTabs`, `executeCdp`, and `moveMouse` behind that object surface so the implementation remains easy to compare with Chrome.
+- Fallback proof: use a regular Codex plugin transport if Chrome-like browser backend registration is not available or is too tightly coupled to OpenAI's bundled Chrome path, but keep the Chrome-shaped JavaScript object as the agent-facing API.
 - Packaging proof: decide whether Savannah installs a local plugin copy from the app bundle, points Codex at a git/local plugin source, or offers both for development and release builds.
 
 Codex Desktop's Browser Use product surface is the built-in in-app browser. Chrome is exposed separately under Computer Use alongside Any App, even though both paths use a shared browser-client API shape internally. Savannah should target Chrome parity, not the in-app-browser product role.
 
-The Chrome-like backend path is potentially make-or-break for close parity because it determines whether Savannah can reuse the familiar browser tool family instead of introducing a parallel Savannah-specific command vocabulary.
+The Chrome-like object surface is more important than the exact bridge path. Reusing OpenAI's private bundled bridge would be useful only if it is available and stable for third-party plugins. The Savannah design should not require that bridge to achieve agent familiarity.
 
 See [Codex Chrome And Browser Runtime Integration Notes](codex-chrome-browser-runtime-notes.md) for the local plugin, public Codex repo, and public issue-tracker evidence behind this distinction.
 
@@ -125,7 +151,7 @@ Savannah should expose a browser backend that speaks the same command family as 
 
 The macOS app can own process-level capabilities that the Safari extension cannot:
 
-- Codex plugin connection endpoint
+- Codex plugin connection endpoint at `~/Library/Containers/com.galewilliams.Savannah/Data/tmp/savannah-codex/codex.sock`
 - session registry
 - command routing
 - app group shared state
@@ -134,6 +160,10 @@ The macOS app can own process-level capabilities that the Safari extension canno
 - permission prompts or operator-visible status UI
 
 This is the closest Savannah equivalent to the Chrome plugin's bundled native host plus extension-host binary.
+
+The first Codex-to-app transport is a user-local Unix domain socket carrying length-prefixed JSON-RPC. The app owns the socket and pairing token under a short runtime directory inside its sandbox container. The plugin reads the token, sends a `hello` handshake, then routes Chrome-shaped backend methods over the socket. This keeps the agent-facing JavaScript browser object independent from the internal transport while avoiding a localhost TCP service.
+
+No additional app sandbox exception is expected for the socket proof. Safari extension installation is a separate operator step: build and run the containing app once, enable the extension in Safari Settings > Extensions, and enable unsigned extension development in Safari's Developer settings if the development build does not appear.
 
 ### Safari Web Extension Option
 

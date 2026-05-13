@@ -6,28 +6,78 @@ This note captures public and local evidence about how Codex exposes Chrome and 
 
 ## Current Conclusion
 
-Savannah should prototype a Chrome-compatible browser client first, then fall back to a regular Codex plugin command surface only if the Chrome/Computer Use browser backend shape is not available to third-party plugins.
+Savannah should mimic the Chrome plugin's JavaScript browser object surface first. The goal is not to depend on OpenAI's private Chrome bridge. The goal is to give Codex agents the same shape they already know how to use:
 
-The reason is tool compatibility. The Chrome integration does not just expose a standalone skill. Its plugin client registers a browser backend that Codex presents through the familiar browser tool families:
-
-```text
-browser_user_open_tabs
-browser_user_claim_tab
-browser_user_history
-list_tabs
-create_tab
-close_tab
-selected_tab
-name_session
-navigate_tab_url
-playwright_*
-cua_*
-dom_cua_*
+```js
+const browser = await agent.browsers.get("extension");
+await browser.nameSession("...");
+const tabs = await browser.user.openTabs();
+const tab = await browser.user.claimTab(tabs[0]);
+await tab.goto("https://example.com");
+await tab.playwright.getByText("Continue", { exact: false }).click();
+await browser.tabs.finalize({ keep: [] });
 ```
 
-If Savannah can participate in that backend shape, Codex users get the Safari equivalent without learning a parallel command vocabulary. If it cannot, Savannah should still ship a normal plugin, but that path is likely less Chrome-compatible.
+The reason is model compatibility. OpenAI can train Codex on its own browser tools and bundled plugin surfaces. Savannah cannot assume that same training advantage, so the safest design is to preserve the browser-object vocabulary Codex already sees in Chrome's own skill:
 
-Terminology matters here. In Codex Desktop, Browser Use is the built-in in-app browser path and selects the `iab` backend. Chrome appears under Computer Use alongside Any App, and the Chrome skill selects the `chrome` backend. Both paths use the local `browser-client.mjs` runtime shape, but they are different product surfaces and should not be collapsed in Savannah docs.
+```text
+agent.browsers.get(...)
+browser.user.openTabs()
+browser.user.claimTab(...)
+browser.user.history(...)
+browser.tabs.selected()
+browser.tabs.new()
+browser.tabs.list()
+browser.tabs.get(...)
+browser.tabs.finalize(...)
+browser.nameSession(...)
+tab.goto(...)
+tab.close()
+tab.title()
+tab.url()
+tab.playwright.*
+tab.cua.*
+tab.dom_cua.*
+tab.dev.*
+```
+
+That surface can be backed by Savannah-owned internals. The transport from Codex to the Savannah app can be a local socket, MCP server, XPC helper, native app endpoint, or another app-owned mechanism. What matters at the Codex-facing boundary is that the agent writes familiar Chrome-shaped JavaScript instead of learning a parallel `savannah_*` command vocabulary.
+
+Using OpenAI's private native-pipe bridge would only be necessary if Savannah tries to become a first-class backend inside Codex's bundled `browser-client.mjs`. That may be unavailable or brittle for third-party plugins, and it is not required to copy the agent-facing object model.
+
+Terminology matters here. In Codex Desktop, Browser Use is the built-in in-app browser path and selects the `iab` backend. Chrome appears under Computer Use alongside Any App, and the Chrome skill selects the `chrome` backend. Both paths use the local browser-object runtime shape, but they are different product surfaces and should not be collapsed in Savannah docs.
+
+## Agent-Facing Chrome Surface
+
+The Chrome plugin is not an MCP tool namespace in the usual sense. There is no direct model-visible tool call named `chrome.getUserTabs` or `browser_user_open_tabs`.
+
+The model-visible call boundary is the generic Node REPL JavaScript tool. The Chrome skill instructs the agent to import the plugin's browser client, run setup, bind a browser object, and then use JavaScript methods on that object:
+
+```js
+const { setupAtlasRuntime } = await import("<chrome plugin root>/scripts/browser-client.mjs");
+await setupAtlasRuntime({ globals: globalThis });
+globalThis.browser = await agent.browsers.get("extension");
+```
+
+After that bootstrap, the skill tells the agent to use the bound `browser` object:
+
+```js
+const userTabs = await browser.user.openTabs();
+const tab = await browser.user.claimTab(userTabs[0]);
+await tab.playwright.getByText("Save", { exact: false }).click();
+await browser.tabs.finalize({ keep: [] });
+```
+
+In the Chrome client internals, `browser.user.openTabs()` is translated to a lower-level backend request named `getUserTabs`. That backend request is not the normal agent-facing surface. It is one transport message inside the browser client.
+
+The practical layers are:
+
+1. Skill layer: tells the agent when to use Chrome and what JavaScript object methods are supported.
+2. JavaScript client layer: installs `globalThis.agent`, `globalThis.display`, and the browser object API.
+3. Transport layer: sends lower-level backend requests such as `getUserTabs`, `claimUserTab`, `createTab`, `executeCdp`, and `moveMouse`.
+4. Backend layer: Chrome extension/native host code actually reads or controls the browser.
+
+Savannah should copy layers 1 and 2 as closely as practical. Layers 3 and 4 should be Savannah-owned and Safari-native.
 
 ## Official OpenAI Signals
 
@@ -43,7 +93,22 @@ The same docs describe these user-facing behaviors:
 - gate browser history separately, without an always-allow option
 - rely on Chrome extension permissions for debugger access, broad website access, browsing history, notifications, bookmarks, downloads, native app communication, and tab groups
 
-That lines up with the local Chrome plugin inspection: the plugin owns skill routing and setup checks, while `browser-client.mjs` builds the shared browser-client runtime and talks to the Chrome-native browser backend.
+That lines up with the local Chrome plugin inspection: the plugin owns skill routing and setup checks, while `browser-client.mjs` builds the shared browser-object runtime and talks to the Chrome-native browser backend.
+
+## Bridge Role
+
+The special bridge in that client is `import.meta.__codexNativePipe`. It is a privileged Codex runtime hook that lets the bundled browser client discover and connect to native browser backend pipes. From the agent's perspective, it is not the API being used. It is a transport detail that makes the Chrome implementation work.
+
+The bridge provides:
+
+- native backend discovery
+- session and turn metadata attachment
+- browser security checks and user elicitation
+- screenshot/display integration
+- tab ownership and cleanup semantics
+- a shared object facade over Chrome, in-app browser, and CDP-style backends
+
+Those are useful behaviors, but they are not unique requirements for Savannah. Savannah can reproduce the same agent-facing object methods with its own transport if it provides comparable semantics and clear errors.
 
 ## Public Codex Repo Signals
 
@@ -125,7 +190,64 @@ Chrome itself is not installed from this repo-local marketplace shape. On this m
 
 ## Savannah App Shape
 
-The app should expose one local command endpoint to the Codex-side plugin client. The endpoint can be a local socket, XPC service, or another app-owned local transport, but it should be versioned and inspectable.
+The app should expose one local command endpoint to the Codex-side plugin client. The selected first transport is a user-local Unix domain socket with length-prefixed JSON-RPC messages.
+
+The first socket location is a short path inside Savannah's sandbox container:
+
+```text
+~/Library/Containers/com.galewilliams.Savannah/Data/tmp/savannah-codex/codex.sock
+```
+
+The first pairing token location is:
+
+```text
+~/Library/Containers/com.galewilliams.Savannah/Data/tmp/savannah-codex/codex-token
+```
+
+The app creates the runtime directory with `0700` permissions, creates the token file with `0600` permissions, and creates the socket with `0600` permissions. The plugin reads the token and sends a `hello` JSON-RPC request before any browser command.
+
+The runtime directory intentionally uses the sandbox container's short `Data/tmp` path instead of Application Support. A sandboxed macOS app sees Application Support through its container path, which can exceed the Unix domain socket path length limit. A top-level `/tmp` path would keep the socket short but requires an app sandbox exception. The container `Data/tmp` path is short enough for Unix sockets, writable by the app without extra sandbox exceptions, and still readable by the separate Codex plugin script through the user's Library path.
+
+The frame format is intentionally tiny:
+
+```text
+4-byte big-endian payload length
+UTF-8 JSON payload
+```
+
+The initial handshake request is:
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": "req_1",
+  "method": "hello",
+  "params": {
+    "protocolVersion": "0.1.0",
+    "client": "savannah-codex-plugin",
+    "token": "<pairing token>"
+  }
+}
+```
+
+After the handshake, the plugin can send raw Chrome-compatible backend methods such as `ping`, `getInfo`, `getUserTabs`, `nameSession`, and `finalizeTabs`. The JavaScript browser object surface remains the preferred agent-facing layer above those raw methods.
+
+Unix socket plus JSON-RPC is the first implementation choice because it is:
+
+- directly usable from Node through `net.createConnection(path)`
+- directly usable from the macOS app through POSIX sockets or Network-framework-compatible Unix endpoints
+- bidirectional without exposing a localhost TCP port
+- easier for a Codex plugin script than `NSXPCConnection`
+- explicit enough to inspect, log, and version
+
+XPC remains a later hardening option if Savannah needs signed native peer identity or a helper process boundary. Localhost HTTP or WebSocket remains a fallback only if browser-debugger-style tooling makes it materially useful.
+
+This socket proof does not require extra app sandbox exceptions. If Savannah later moves the socket outside its container, it will need either a sandbox temporary file exception, an App Group container, or a non-sandboxed helper. Safari extension installation and enablement are separate:
+
+- Build and run the containing Savannah app at least once so Safari can discover the bundled extensions.
+- In Safari, enable the extension under Safari Settings > Extensions.
+- During unsigned development, enable Safari's developer setting for unsigned extensions if Safari does not show the extension.
+- In Safari 17 or later, also check profile-specific extension enablement when testing with Safari profiles.
 
 The app owns:
 
@@ -141,7 +263,18 @@ The app owns:
 
 ## First Proof Target
 
-The smallest proof currently answers these commands from `scripts/savannah-client.mjs`:
+The smallest proof should expose the Chrome-shaped object surface from `scripts/savannah-client.mjs`:
+
+```js
+const { setupSavannahRuntime } = await import("<plugin root>/scripts/savannah-client.mjs");
+await setupSavannahRuntime({ globals: globalThis });
+const browser = await savannah.browsers.get("safari");
+await browser.nameSession("short task name");
+const tabs = await browser.user.openTabs();
+await browser.tabs.finalize({ keep: [] });
+```
+
+Behind that object surface, the proof currently answers these raw commands:
 
 ```text
 ping -> pong
@@ -149,7 +282,7 @@ getInfo -> backend id, app version, extension state, capability sources
 getTabs -> at least one truthful tab/page inventory shape, even if partial
 ```
 
-`ping` and `getInfo` are plugin-local proof commands now. `getTabs` returns an explicit `unproven` inventory until Savannah connects to `SpiderWeb`, `SafariTourGuide`, or native automation.
+`ping` and `getInfo` first try the Savannah app over the Unix socket. When the app is not running, the plugin returns explicit plugin-local fallback responses unless `SAVANNAH_REQUIRE_APP=1` is set. `getTabs` returns an explicit `unproven` inventory until Savannah connects to `SpiderWeb`, `SafariTourGuide`, or native automation.
 
 Success for the next slice means Codex can call Savannah through the chosen plugin/backend path and Savannah can report a capability list that distinguishes:
 

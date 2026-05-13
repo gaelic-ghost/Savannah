@@ -11,6 +11,11 @@ import CoreData
 @main
 struct SavannahApp: App {
     let persistenceController = PersistenceController.shared
+    private let rpcServer = SavannahRPCServer()
+
+    init() {
+        rpcServer.start()
+    }
 
     var body: some Scene {
         WindowGroup {
