@@ -52,8 +52,29 @@ The public `openai/codex` repository does not appear to publish the Chrome exten
 - `chrome@openai-bundled` and `computer-use@openai-bundled` are in the discoverable-plugin allowlist in `codex-rs/core-plugins/src/lib.rs`.
 - Browser-origin approval tests model browser-origin approval as an MCP-style elicitation with connector id `browser-use` and tool name `access_browser_origin`.
 - macOS sandbox tests explicitly allow a `/tmp/codex-browser-use` Unix socket path, matching issue reports that the shared browser runtime and Chrome extension host communication involve local socket discovery.
+- `BrowserUseExternal` is a stable, default-enabled feature flag, but the public source only describes it as a requirements gate for external browser integration. It does not expose a third-party backend registration API.
+- The TUI hides the `openai-bundled` marketplace from normal plugin listing, which explains why Chrome can be present locally without behaving like an ordinary repo marketplace entry.
 
 These details support treating the shared browser-client runtime as a first-class Codex browser transport, not merely a skill. They do not prove that third-party plugins can register new Chrome-like external browser backends.
+
+## Core Plugin Loader Signals
+
+The public core-plugin source is useful for normal plugin mechanics:
+
+- `marketplace.rs` discovers repo marketplaces at `.agents/plugins/marketplace.json` and `.claude-plugin/marketplace.json`.
+- Local marketplace plugin paths must start with `./` and must stay inside the marketplace root.
+- Local plugin paths resolve relative to the marketplace root, not relative to `.agents/plugins/`.
+- Git plugin sources can point at repository roots or git subdirectories, with optional `ref` or `sha` selectors.
+- Invalid or unsupported marketplace plugin entries are skipped with warnings instead of failing the whole marketplace.
+- `store.rs` installs plugins into `plugins/cache/<marketplace>/<plugin>/<version>/` under Codex home.
+- `store.rs` chooses the cache version from `plugin.json` when present, otherwise `local`.
+- `loader.rs` refreshes non-curated configured plugin cache entries from discovered marketplaces; curated plugins use the curated marketplace SHA-derived cache version.
+- `loader.rs` loads skills, MCP servers, apps, and hooks from the installed cache root, not directly from the source marketplace path.
+- `manager.rs` installs a resolved marketplace plugin, writes its enabled state into user config, and uses the same installed cache as the later runtime loader.
+
+For Savannah, this means the repo-local marketplace shape is correct for ordinary plugin testing. It also means editing the source plugin is not enough after installation; Codex may keep using the cached copy until the plugin cache refreshes or the plugin is reinstalled.
+
+The public code did not show a way for a normal plugin manifest to declare a new `agent.browsers` backend. The visible manifest-loading path exposes skills, MCP servers, apps, and hooks. Browser backend registration still appears to live in the bundled browser-client/runtime side rather than the generic core-plugin loader.
 
 ## Public Issue Tracker Signals
 
@@ -146,6 +167,12 @@ Failure should still be useful. If Chrome-like browser backend registration is n
 - [Codex plugins](https://developers.openai.com/codex/plugins)
 - [Build plugins](https://developers.openai.com/codex/plugins/build)
 - [openai/codex core plugin allowlist](https://github.com/openai/codex/blob/main/codex-rs/core-plugins/src/lib.rs)
+- [openai/codex marketplace loader](https://github.com/openai/codex/blob/main/codex-rs/core-plugins/src/marketplace.rs)
+- [openai/codex plugin loader](https://github.com/openai/codex/blob/main/codex-rs/core-plugins/src/loader.rs)
+- [openai/codex plugin manager](https://github.com/openai/codex/blob/main/codex-rs/core-plugins/src/manager.rs)
+- [openai/codex plugin store](https://github.com/openai/codex/blob/main/codex-rs/core-plugins/src/store.rs)
+- [openai/codex feature flags](https://github.com/openai/codex/blob/main/codex-rs/features/src/lib.rs)
+- [openai/codex TUI plugin list filtering](https://github.com/openai/codex/blob/main/codex-rs/tui/src/app/background_requests.rs)
 - [openai/codex issue 20642: external or detachable Browser Use](https://github.com/openai/codex/issues/20642)
 - [openai/codex issue 22057: Browser Use and Chrome backend timeouts](https://github.com/openai/codex/issues/22057)
 - [openai/codex issue 21868: Chrome connected but fallback routing on Windows](https://github.com/openai/codex/issues/21868)
