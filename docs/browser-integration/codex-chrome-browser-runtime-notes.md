@@ -75,13 +75,14 @@ For Savannah, the lesson is to test each layer separately:
 
 ## Plugin Shape
 
-The Savannah plugin should start with:
+The Savannah plugin now starts with:
 
 ```text
 plugins/savannah/
   .codex-plugin/plugin.json
   skills/savannah/SKILL.md
   scripts/savannah-client.mjs
+  scripts/check-codex-install-surfaces.mjs
   scripts/check-app-connection.mjs
   scripts/check-safari-extension-state.mjs
   assets/
@@ -96,6 +97,10 @@ The first client should copy the Chrome plugin's tested shape as far as possible
 - provide connection diagnostics before doing browser work
 - keep command names and response fields close to Chrome
 - return clear unsupported-command errors for gaps
+
+The repo-local marketplace lives at `.agents/plugins/marketplace.json` and points at `./plugins/savannah`. That matches the official local-plugin path for repo-scoped testing. If Savannah later needs a personal install for day-to-day use, the personal marketplace at `~/.agents/plugins/marketplace.json` can point at an absolute or home-rooted Savannah plugin source, and Codex will install a cached copy under `~/.codex/plugins/cache/<marketplace>/<plugin>/<version>/`.
+
+Chrome itself is not installed from this repo-local marketplace shape. On this machine it is an OpenAI-bundled plugin under `~/.codex/plugins/cache/openai-bundled/chrome/0.1.7/`, with a `latest` sibling. Browser Use and Computer Use have sibling bundled cache entries. The Savannah proof should therefore try the ordinary marketplace path first, then only consider a bundled-cache-style copy if Codex cannot expose the browser backend shape through a normal local plugin.
 
 ## Savannah App Shape
 
@@ -115,7 +120,7 @@ The app owns:
 
 ## First Proof Target
 
-The smallest proof should answer:
+The smallest proof currently answers these commands from `scripts/savannah-client.mjs`:
 
 ```text
 ping -> pong
@@ -123,7 +128,9 @@ getInfo -> backend id, app version, extension state, capability sources
 getTabs -> at least one truthful tab/page inventory shape, even if partial
 ```
 
-Success means Codex can call Savannah through the chosen plugin/backend path and Savannah can report a capability list that distinguishes:
+`ping` and `getInfo` are plugin-local proof commands now. `getTabs` returns an explicit `unproven` inventory until Savannah connects to `SpiderWeb`, `SafariTourGuide`, or native automation.
+
+Success for the next slice means Codex can call Savannah through the chosen plugin/backend path and Savannah can report a capability list that distinguishes:
 
 - WebExtension-backed
 - AppExtension-backed
