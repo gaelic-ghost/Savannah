@@ -98,6 +98,7 @@ Planned
 - [ ] Define a typed command protocol for `ping`, `getInfo`, tab inventory, tab creation, tab selection, navigation, session naming, and explicit unsupported-command errors.
 - [x] Enable only the `SpiderWeb` WebExtension permissions needed for the first command slice.
 - [x] Implement `SpiderWeb` native messaging for tab snapshot liveness and capability reporting.
+- [x] Prove `getTabs` can read enabled Safari tabs from the `SpiderWeb` App Group snapshot.
 - [ ] Implement app-to-`SafariTourGuide` messaging only for active-page or `SafariServices` capabilities that WebExtension APIs do not cover cleanly.
 - [ ] Inventory Accessibility, Apple Events, and AppleScript candidates for remaining gaps, including required permissions and operator-facing failure messages.
 
@@ -105,7 +106,7 @@ Planned
 
 - [ ] Savannah can answer a Codex-side `ping` and `getInfo` through the chosen plugin/backend path.
 - [ ] The backend reports a capability list that distinguishes WebExtension, App Extension, native automation, unsupported, and unproven capabilities.
-- [ ] At least one tab-oriented command works end to end through the preferred API path.
+- [x] At least one tab-oriented command works end to end through the preferred API path.
 - [ ] Unsupported commands fail with clear, human-readable messages and no silent native automation fallback.
 
 ## Backlog Candidates

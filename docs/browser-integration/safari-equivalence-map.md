@@ -171,7 +171,7 @@ Shared browser state is a separate app-extension concern. `SpiderWeb` writes nat
 ~/Library/Group Containers/group.com.galewilliams.Savannah/savannah-codex/spiderweb-state.json
 ```
 
-If the App Group is not available, Savannah reports that state explicitly in `webExtensionBridge`. In the current local proof, the App Group container is available and Safari reports both bundled extensions through `SFSafariExtensionManager`, but both are disabled until enabled in Safari Settings.
+If the App Group is not available, Savannah reports that state explicitly in `webExtensionBridge`. In the current local proof, the App Group container is available, Safari reports both bundled extensions through `SFSafariExtensionManager`, and both extensions are enabled in Safari Settings.
 
 ### Safari Web Extension Option
 
@@ -189,7 +189,7 @@ The initial `SpiderWeb` implementation now includes a first native-messaging tab
 - `browser.runtime.sendNativeMessage(...)` delivery to the native handler
 - App Group JSON snapshot writing for the containing app to read
 
-That means `SpiderWeb` is now the first WebExtension-backed tab inventory candidate. The app still treats the inventory as `unproven` until Safari runs the enabled extension and a snapshot appears in shared state.
+That means `SpiderWeb` is now the first WebExtension-backed tab inventory path. With both Safari extensions enabled and all three targets carrying the `group.com.galewilliams.Savannah` App Group entitlement, `getTabs` returned a `web-extension-snapshot` inventory containing Safari's Start Page tab and an active `https://example.com/` tab.
 
 This option could help with:
 

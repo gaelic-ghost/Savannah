@@ -257,6 +257,8 @@ This socket proof does not require extra app sandbox exceptions. If Savannah lat
 
 That App Group is separate from the Codex socket sandbox decision. The socket can stay inside the Savannah app container, but browser state shared by the Safari Web Extension and containing app needs a shared container. If the App Group entitlement is missing from either the Savannah app target or the `SpiderWeb` target, `getInfo` reports the missing shared state instead of pretending tab inventory is available.
 
+The first live proof succeeded with the App Group entitlement present on the Savannah app, `SpiderWeb`, and `SafariTourGuide` targets. After Safari enabled both extensions, `SpiderWeb` wrote `spiderweb-state.json` and the Codex-side `getTabs` call returned `inventory: "web-extension-snapshot"` with the active `https://example.com/` tab.
+
 The app owns:
 
 - backend liveness
