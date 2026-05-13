@@ -97,6 +97,7 @@ Planned
 - [ ] Test whether the plugin client can participate in the existing Chrome/Computer Use browser runtime shape or must expose regular plugin commands.
 - [ ] Define a typed command protocol for `ping`, `getInfo`, tab creation, tab selection, navigation, session naming, and explicit unsupported-command errors.
 - [x] Define typed snapshot validation and capability reporting for `getTabs` and `getUserTabs`.
+- [x] Prove `createTab` through app-to-`SpiderWeb` WebExtension dispatch and refreshed tab snapshots.
 - [x] Enable only the `SpiderWeb` WebExtension permissions needed for the first command slice.
 - [x] Implement `SpiderWeb` native messaging for tab snapshot liveness and capability reporting.
 - [x] Prove `getTabs` can read enabled Safari tabs from the `SpiderWeb` App Group snapshot.

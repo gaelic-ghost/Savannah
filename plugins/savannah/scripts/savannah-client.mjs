@@ -27,7 +27,7 @@ const capabilitySources = {
   getUserTabs: "unproven",
   getUserHistory: "unsupported",
   claimUserTab: "unproven",
-  createTab: "unproven",
+  createTab: "web-extension",
   finalizeTabs: "plugin",
   nameSession: "plugin",
   attach: "unproven",
@@ -120,7 +120,11 @@ export function createSavannahClient(options = {}) {
     },
 
     async createTab(request) {
-      return unsupported("createTab", "Savannah cannot create Safari tabs until the WebExtension or App Extension route is proven.", { request });
+      return appOrFallback("createTab", request ?? {}, () => unsupported(
+        "createTab",
+        "Savannah cannot create Safari tabs until the running app and SpiderWeb extension are available.",
+        { request }
+      ));
     },
 
     async finalizeTabs() {

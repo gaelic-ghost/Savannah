@@ -65,4 +65,11 @@ nonisolated enum JSONValue: Codable, Equatable {
         }
         return value
     }
+
+    var bool: Bool? {
+        guard case let .bool(value) = self else {
+            return nil
+        }
+        return value
+    }
 }
