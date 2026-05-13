@@ -1,0 +1,37 @@
+{
+  "name": "savannah",
+  "version": "0.1.0",
+  "description": "Safari browser integration experiments for Codex through the Savannah macOS app.",
+  "author": {
+    "name": "Gale W",
+    "email": "mail@galewilliams.com",
+    "url": "https://github.com/gaelic-ghost"
+  },
+  "homepage": "https://github.com/gaelic-ghost/Savannah",
+  "repository": "https://github.com/gaelic-ghost/Savannah",
+  "license": "UNLICENSED",
+  "keywords": [
+    "safari",
+    "browser",
+    "codex",
+    "macos"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Savannah",
+    "shortDescription": "Prototype Safari browser control for Codex",
+    "longDescription": "Savannah is an early Safari browser integration for Codex. It probes whether a local plugin can match the Chrome browser command shape while routing browser work through the Savannah macOS app, Safari Web Extension APIs, Safari App Extension APIs, and explicit native automation fallbacks where needed.",
+    "developerName": "Gale W",
+    "category": "Productivity",
+    "capabilities": [
+      "Interactive",
+      "Read"
+    ],
+    "websiteURL": "https://github.com/gaelic-ghost/Savannah",
+    "defaultPrompt": [
+      "Check whether Savannah can reach Safari.",
+      "Report Savannah browser capability sources.",
+      "Probe the Savannah Codex install surface."
+    ]
+  }
+}
