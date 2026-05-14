@@ -145,9 +145,11 @@ nonisolated final class SavannahCommandRouter {
     private func infoPayload() -> [String: JSONValue] {
         let safariExtensions = SavannahSafariExtensionMonitor.report()
         let webExtensionBridge = SavannahExtensionBridgeStore.loadStatePayload()
-        let tabCapabilitySource = webExtensionBridge.object?["available"] == .bool(true)
-            ? JSONValue.string("web-extension")
-            : JSONValue.string("unproven")
+        let hasSnapshot = webExtensionBridge.object?["available"] == .bool(true)
+        let isFresh = webExtensionBridge.object?["freshness"]?.object?["isFresh"] == .bool(true)
+        let tabCapabilitySource: JSONValue = hasSnapshot
+            ? .string(isFresh ? "web-extension" : "web-extension-stale")
+            : .string("unproven")
 
         return [
             "backendId": .string("savannah"),

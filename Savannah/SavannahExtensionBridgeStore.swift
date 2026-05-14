@@ -70,15 +70,20 @@ nonisolated enum SavannahExtensionBridgeStore {
         let inventory = hasSnapshot
             ? (isFresh ? "web-extension-snapshot" : "web-extension-snapshot-stale")
             : "empty"
+        let capabilitySource = hasSnapshot
+            ? (isFresh ? "web-extension" : "web-extension-stale")
+            : "unproven"
 
         return [
             "tabs": tabs,
             "inventory": .string(inventory),
-            "capabilitySource": .string(hasSnapshot ? "web-extension" : "unproven"),
+            "capabilitySource": .string(capabilitySource),
             "webExtensionBridge": bridge,
             "message": .string(
                 hasSnapshot
-                    ? "Savannah loaded Safari tab inventory from the latest valid SpiderWeb native messaging snapshot."
+                    ? (isFresh
+                        ? "Savannah loaded Safari tab inventory from the latest valid SpiderWeb native messaging snapshot."
+                        : "Savannah loaded Safari tab inventory from a stale SpiderWeb native messaging snapshot. Open or activate a Safari tab to wake SpiderWeb and refresh the bridge.")
                     : "Savannah is reachable over its Unix socket, but SpiderWeb has not provided a tab snapshot yet."
             )
         ]

@@ -179,8 +179,8 @@ nonisolated enum SavannahWebExtensionCommandDispatcher {
             ))
         case .timeout:
             return .failure(
-                message: "Savannah asked SpiderWeb to run \(request.kind), but SpiderWeb did not write a command acknowledgement within \(Int(commandAcknowledgementTimeoutSeconds)) seconds.",
-                data: baseFailureData(for: request)
+                message: "Savannah asked SpiderWeb to run \(request.kind), but SpiderWeb did not write a command acknowledgement within \(Int(commandAcknowledgementTimeoutSeconds)) seconds. This usually means Safari has not started or refreshed the SpiderWeb background page; open or activate a Safari tab and retry.",
+                data: timeoutFailureData(for: request)
             )
         case let .failure(error):
             return .failure(
@@ -223,6 +223,12 @@ nonisolated enum SavannahWebExtensionCommandDispatcher {
             "extensionBundleIdentifier": .string(extensionBundleIdentifier),
             "requestId": .string(request.requestId)
         ]
+    }
+
+    private static func timeoutFailureData(for request: WebExtensionCommandRequest) -> [String: JSONValue] {
+        baseFailureData(for: request).merging([
+            "webExtensionBridge": SavannahExtensionBridgeStore.loadStatePayload()
+        ]) { _, new in new }
     }
 }
 

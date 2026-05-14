@@ -101,6 +101,7 @@ Planned
 - [x] Add request-id command acknowledgements so WebExtension-backed commands can report completion instead of dispatch-only acceptance.
 - [x] Split Chrome-compatible tab creation from navigation so `tabs.new()` returns a tab facade and `tab.goto(url)` owns page loading.
 - [x] Add WebExtension-backed tab info, reload, and close commands behind the Chrome-style tab facade.
+- [x] Report stale SpiderWeb snapshots distinctly and make command acknowledgement timeouts point at Safari extension wake-up.
 - [x] Enable only the `SpiderWeb` WebExtension permissions needed for the first command slice.
 - [x] Implement `SpiderWeb` native messaging for tab snapshot liveness and capability reporting.
 - [x] Prove `getTabs` can read enabled Safari tabs from the `SpiderWeb` App Group snapshot.
