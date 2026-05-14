@@ -15,6 +15,7 @@ nonisolated enum SavannahWebExtensionCommandDispatcher {
     static let getTabInfoMessageName = "savannah.getTabInfo"
     static let reloadTabMessageName = "savannah.reloadTab"
     static let closeTabMessageName = "savannah.closeTab"
+    static let getPageSnapshotMessageName = "savannah.getPageSnapshot"
     static let dispatchTimeoutSeconds = 5.0
     static let commandAcknowledgementTimeoutSeconds = 15.0
 
@@ -71,6 +72,17 @@ nonisolated enum SavannahWebExtensionCommandDispatcher {
             requiredFields: ["tabId"],
             successMessage: "SpiderWeb closed the Safari tab and wrote a command acknowledgement.",
             fallbackFailureMessage: "SpiderWeb reported that Safari did not close the requested tab, but did not include a detailed error message."
+        )
+    }
+
+    static func getPageSnapshot(params: JSONValue?) -> SavannahCommandDispatchResult {
+        tabCommand(
+            kind: "savannah.getPageSnapshot",
+            messageName: getPageSnapshotMessageName,
+            params: params,
+            requiredFields: ["tabId"],
+            successMessage: "SpiderWeb read a Safari page snapshot and wrote a command acknowledgement.",
+            fallbackFailureMessage: "SpiderWeb reported that Safari did not read the requested page snapshot, but did not include a detailed error message."
         )
     }
 
@@ -211,6 +223,10 @@ nonisolated enum SavannahWebExtensionCommandDispatcher {
            let id = tab["id"] {
             result["id"] = id
             result["tab"] = .object(tab)
+        }
+
+        if let pageSnapshot = acknowledgement.pageSnapshot {
+            result["pageSnapshot"] = pageSnapshot
         }
 
         return result

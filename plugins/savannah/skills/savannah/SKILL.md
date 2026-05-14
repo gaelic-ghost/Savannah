@@ -50,6 +50,7 @@ navigateTabUrl
 getTabInfo
 reloadTab
 closeTab
+getPageSnapshot
 finalizeTabs
 nameSession
 attach
@@ -58,6 +59,15 @@ executeCdp
 executeUnhandledCommand
 moveMouse
 ```
+
+The tab facade also exposes the first DOM-side Chrome-shaped read path:
+
+```js
+const tab = await browser.tabs.selected();
+const snapshot = await tab.dom_cua.get_visible_dom();
+```
+
+That path is backed by `SpiderWeb` content-script messaging and returns a page snapshot with URL, title, viewport, visible text, and visible interactive elements. Treat it as a read-only proof, not full Chrome DOM CUA parity yet.
 
 Unsupported commands must return explicit unsupported-command errors with a capability source of `unsupported` or `unproven`.
 
