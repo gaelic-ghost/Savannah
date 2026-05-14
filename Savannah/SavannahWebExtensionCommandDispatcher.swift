@@ -12,6 +12,9 @@ nonisolated enum SavannahWebExtensionCommandDispatcher {
     static let extensionBundleIdentifier = "com.galewilliams.Savannah.SpiderWeb"
     static let createTabMessageName = "savannah.createTab"
     static let navigateTabURLMessageName = "savannah.navigateTabUrl"
+    static let getTabInfoMessageName = "savannah.getTabInfo"
+    static let reloadTabMessageName = "savannah.reloadTab"
+    static let closeTabMessageName = "savannah.closeTab"
     static let dispatchTimeoutSeconds = 5.0
     static let commandAcknowledgementTimeoutSeconds = 15.0
 
@@ -28,30 +31,75 @@ nonisolated enum SavannahWebExtensionCommandDispatcher {
     }
 
     static func navigateTabURL(params: JSONValue?) -> SavannahCommandDispatchResult {
-        let request = WebExtensionCommandRequest(
+        tabCommand(
             kind: "savannah.navigateTabUrl",
             messageName: navigateTabURLMessageName,
+            params: params,
+            requiredFields: ["tabId", "url"],
+            successMessage: "SpiderWeb navigated the Safari tab and wrote a command acknowledgement.",
+            fallbackFailureMessage: "SpiderWeb reported that Safari did not navigate the requested tab, but did not include a detailed error message."
+        )
+    }
+
+    static func getTabInfo(params: JSONValue?) -> SavannahCommandDispatchResult {
+        tabCommand(
+            kind: "savannah.getTabInfo",
+            messageName: getTabInfoMessageName,
+            params: params,
+            requiredFields: ["tabId"],
+            successMessage: "SpiderWeb read Safari tab information and wrote a command acknowledgement.",
+            fallbackFailureMessage: "SpiderWeb reported that Safari did not read the requested tab, but did not include a detailed error message."
+        )
+    }
+
+    static func reloadTab(params: JSONValue?) -> SavannahCommandDispatchResult {
+        tabCommand(
+            kind: "savannah.reloadTab",
+            messageName: reloadTabMessageName,
+            params: params,
+            requiredFields: ["tabId"],
+            successMessage: "SpiderWeb reloaded the Safari tab and wrote a command acknowledgement.",
+            fallbackFailureMessage: "SpiderWeb reported that Safari did not reload the requested tab, but did not include a detailed error message."
+        )
+    }
+
+    static func closeTab(params: JSONValue?) -> SavannahCommandDispatchResult {
+        tabCommand(
+            kind: "savannah.closeTab",
+            messageName: closeTabMessageName,
+            params: params,
+            requiredFields: ["tabId"],
+            successMessage: "SpiderWeb closed the Safari tab and wrote a command acknowledgement.",
+            fallbackFailureMessage: "SpiderWeb reported that Safari did not close the requested tab, but did not include a detailed error message."
+        )
+    }
+
+    private static func tabCommand(
+        kind: String,
+        messageName: String,
+        params: JSONValue?,
+        requiredFields: [String],
+        successMessage: String,
+        fallbackFailureMessage: String
+    ) -> SavannahCommandDispatchResult {
+        let request = WebExtensionCommandRequest(
+            kind: kind,
+            messageName: messageName,
             params: params
         )
 
-        guard request.payload["tabId"] != nil || request.payload["tab_id"] != nil else {
+        for field in requiredFields where !request.hasField(field) {
+            let fieldName = field == "tabId" ? "tabId" : field
             return .failure(
-                message: "Savannah could not ask SpiderWeb to navigate a Safari tab because tabId was missing.",
-                data: baseFailureData(for: request)
-            )
-        }
-
-        guard request.payload["url"] != nil else {
-            return .failure(
-                message: "Savannah could not ask SpiderWeb to navigate a Safari tab because url was missing.",
+                message: "Savannah could not ask SpiderWeb to run \(kind) because \(fieldName) was missing.",
                 data: baseFailureData(for: request)
             )
         }
 
         return dispatch(
             request: request,
-            successMessage: "SpiderWeb navigated the Safari tab and wrote a command acknowledgement.",
-            fallbackFailureMessage: "SpiderWeb reported that Safari did not navigate the requested tab, but did not include a detailed error message."
+            successMessage: successMessage,
+            fallbackFailureMessage: fallbackFailureMessage
         )
     }
 
@@ -224,6 +272,15 @@ nonisolated struct WebExtensionCommandRequest {
         }
 
         return userInfo
+    }
+
+    func hasField(_ field: String) -> Bool {
+        switch field {
+        case "tabId":
+            return payload["tabId"] != nil || payload["tab_id"] != nil || payload["id"] != nil
+        default:
+            return payload[field] != nil
+        }
     }
 }
 

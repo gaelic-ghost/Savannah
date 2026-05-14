@@ -60,6 +60,10 @@ function normalizeTabId(value) {
     return tabId;
 }
 
+function commandTabId(request) {
+    return normalizeTabId(request.tabId ?? request.tab_id ?? request.id);
+}
+
 function normalizedURL(value) {
     if (typeof value !== "string") {
         return value;
@@ -80,18 +84,13 @@ function tabMatchesURL(tab, targetURL) {
     return normalizedURL(tab.url) === normalizedURL(targetURL);
 }
 
-async function waitForTabLoad(tabId, targetURL, timeoutMs = 15000) {
-    const initialTab = await browser.tabs.get(tabId);
-    if (initialTab.status === "complete" && tabMatchesURL(initialTab, targetURL)) {
-        return initialTab;
-    }
-
+async function runAndWaitForTabLoad(tabId, targetURL, operation, timeoutMs = 15000) {
     return new Promise((resolve, reject) => {
         let settled = false;
         const timeout = setTimeout(() => {
             finish(
                 reject,
-                new Error(`SpiderWeb timed out after ${timeoutMs}ms waiting for Safari tab ${tabId} to load ${targetURL}.`)
+                new Error(`SpiderWeb timed out after ${timeoutMs}ms waiting for Safari tab ${tabId} to load ${targetURL ?? "its current URL"}.`)
             );
         }, timeoutMs);
 
@@ -105,6 +104,13 @@ async function waitForTabLoad(tabId, targetURL, timeoutMs = 15000) {
             callback(value);
         }
 
+        async function resolveIfComplete() {
+            const currentTab = await browser.tabs.get(tabId);
+            if (currentTab.status === "complete" && tabMatchesURL(currentTab, targetURL)) {
+                finish(resolve, currentTab);
+            }
+        }
+
         function listener(updatedTabId, changeInfo, tab) {
             if (updatedTabId !== tabId || changeInfo.status !== "complete" || !tabMatchesURL(tab, targetURL)) {
                 return;
@@ -114,20 +120,54 @@ async function waitForTabLoad(tabId, targetURL, timeoutMs = 15000) {
         }
 
         browser.tabs.onUpdated.addListener(listener);
+        Promise.resolve()
+            .then(operation)
+            .then(resolveIfComplete)
+            .catch((error) => finish(reject, error));
     });
 }
 
 async function navigateTabUrl(request) {
-    const tabId = normalizeTabId(request.tabId ?? request.tab_id);
+    const tabId = commandTabId(request);
     const url = request.url;
     if (typeof url !== "string" || url.length === 0) {
         throw new Error("SpiderWeb could not navigate the requested Safari tab because url was missing.");
     }
 
-    await browser.tabs.update(tabId, { url });
-    const tab = await waitForTabLoad(tabId, url, request.timeoutMs);
+    const tab = await runAndWaitForTabLoad(
+        tabId,
+        url,
+        () => browser.tabs.update(tabId, { url }),
+        request.timeoutMs
+    );
     const snapshotPublish = await publishTabs("navigate-tab-url");
     return { tab, snapshotPublish };
+}
+
+async function getTabInfo(request) {
+    const tabId = commandTabId(request);
+    const tab = await browser.tabs.get(tabId);
+    const snapshotPublish = await publishTabs("get-tab-info");
+    return { tab, snapshotPublish };
+}
+
+async function reloadTab(request) {
+    const tabId = commandTabId(request);
+    const tab = await runAndWaitForTabLoad(
+        tabId,
+        null,
+        () => browser.tabs.reload(tabId, { bypassCache: request.bypassCache === true }),
+        request.timeoutMs
+    );
+    const snapshotPublish = await publishTabs("reload-tab");
+    return { tab, snapshotPublish };
+}
+
+async function closeTab(request) {
+    const tabId = commandTabId(request);
+    await browser.tabs.remove(tabId);
+    const snapshotPublish = await publishTabs("close-tab");
+    return { snapshotPublish };
 }
 
 function commandAcknowledgement(command, fields) {
@@ -201,6 +241,33 @@ function handleNativePortMessage(message) {
             navigateTabUrl,
             "SpiderWeb navigated the requested Safari tab.",
             "SpiderWeb could not navigate the requested Safari tab."
+        );
+    }
+
+    if (command?.kind === "savannah.getTabInfo") {
+        runCommand(
+            command,
+            getTabInfo,
+            "SpiderWeb read the requested Safari tab.",
+            "SpiderWeb could not read the requested Safari tab."
+        );
+    }
+
+    if (command?.kind === "savannah.reloadTab") {
+        runCommand(
+            command,
+            reloadTab,
+            "SpiderWeb reloaded the requested Safari tab.",
+            "SpiderWeb could not reload the requested Safari tab."
+        );
+    }
+
+    if (command?.kind === "savannah.closeTab") {
+        runCommand(
+            command,
+            closeTab,
+            "SpiderWeb closed the requested Safari tab.",
+            "SpiderWeb could not close the requested Safari tab."
         );
     }
 }

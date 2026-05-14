@@ -136,6 +136,36 @@ struct SavannahTests {
         #expect(acknowledgement.tab?.object?["url"] == .string("https://example.com/?savannah-goto=1"))
     }
 
+    @Test func spiderWebCommandAcknowledgementDecodesCompletedCloseWithoutTabPayload() throws {
+        let requestId = "5F0EE991-3385-4B8D-86C4-AFC109669EC4"
+        let data = Data(
+            """
+            {
+              "kind": "savannah.commandAck",
+              "protocolVersion": "0.1.0",
+              "requestId": "\(requestId)",
+              "commandKind": "savannah.closeTab",
+              "ok": true,
+              "handled": true,
+              "completedAt": "2026-05-14T18:18:59.199Z",
+              "message": "SpiderWeb closed the requested Safari tab.",
+              "snapshotPublish": {
+                "ok": true,
+                "handled": true
+              }
+            }
+            """.utf8
+        )
+
+        let acknowledgement = try SpiderWebCommandAcknowledgement.decode(from: data)
+        try acknowledgement.validate(expectedRequestId: requestId, expectedProtocolVersion: "0.1.0")
+
+        #expect(acknowledgement.ok)
+        #expect(acknowledgement.commandKind == "savannah.closeTab")
+        #expect(acknowledgement.tab == nil)
+        #expect(acknowledgement.snapshotPublish?.object?["handled"] == .bool(true))
+    }
+
     @Test func spiderWebCommandAcknowledgementRejectsUnexpectedRequestId() throws {
         let data = Data(
             """

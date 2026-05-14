@@ -287,6 +287,9 @@ getUserHistory
 claimUserTab
 createTab
 navigateTabUrl
+getTabInfo
+reloadTab
+closeTab
 finalizeTabs
 nameSession
 attach
@@ -309,6 +312,9 @@ Initial support can be narrower:
 | `claimUserTab` | claim only an observed page; otherwise return unsupported/not-observable |
 | `createTab` | create an active Safari tab through `SpiderWeb` and return the created tab id without treating URL loading as part of creation |
 | `navigateTabUrl` | navigate an existing Safari tab through `SpiderWeb` and wait for the tab's WebExtension update event to report a completed load |
+| `getTabInfo` | read a single Safari tab through `SpiderWeb` and return a Chrome-style tab facade from `browser.tabs.get(id)` |
+| `reloadTab` | reload an existing Safari tab through `SpiderWeb` and wait for a completed tab update |
+| `closeTab` | close an existing Safari tab through `SpiderWeb` and refresh the tab snapshot |
 | `getUserHistory` | unsupported unless a supported Safari or user-approved native source is proven |
 | `attach` / `detach` | start/stop session tracking for an observable page |
 | `executeCdp` | unsupported; keep name for compatibility but report that Safari has no CDP bridge |
