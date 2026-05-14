@@ -103,6 +103,7 @@ Planned
 - [x] Add WebExtension-backed tab info, reload, and close commands behind the Chrome-style tab facade.
 - [x] Report stale SpiderWeb snapshots distinctly and make command acknowledgement timeouts point at Safari extension wake-up.
 - [x] Prove a read-only `tab.dom_cua.get_visible_dom()` path through `SpiderWeb` content-script page snapshots.
+- [x] Add first node-id/selector DOM CUA actions for click and text entry through `SpiderWeb`.
 - [x] Enable only the `SpiderWeb` WebExtension permissions needed for the first command slice.
 - [x] Implement `SpiderWeb` native messaging for tab snapshot liveness and capability reporting.
 - [x] Prove `getTabs` can read enabled Safari tabs from the `SpiderWeb` App Group snapshot.

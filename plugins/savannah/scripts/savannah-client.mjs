@@ -36,7 +36,10 @@ const capabilitySources = {
   closeTab: "web-extension",
   close_tab: "web-extension",
   getPageSnapshot: "web-extension",
+  domCuaAction: "web-extension",
   dom_cua_get_visible_dom: "web-extension",
+  dom_cua_click: "web-extension",
+  dom_cua_type: "web-extension",
   finalizeTabs: "plugin",
   nameSession: "plugin",
   attach: "unproven",
@@ -184,6 +187,14 @@ export function createSavannahClient(options = {}) {
       return appOrFallback("getPageSnapshot", normalizeTabRequest(request), () => unsupported(
         "getPageSnapshot",
         "Savannah cannot read Safari page snapshots until the running app and SpiderWeb content script are available.",
+        { request }
+      ));
+    },
+
+    async domCuaAction(request) {
+      return appOrFallback("domCuaAction", normalizeDOMCuaActionRequest(request), () => unsupported(
+        "domCuaAction",
+        "Savannah cannot run DOM CUA actions until the running app and SpiderWeb content script are available.",
         { request }
       ));
     },
@@ -347,6 +358,35 @@ function createTabFacade(client, tabOrId) {
       async get_visible_dom(options = {}) {
         const result = await client.getPageSnapshot({ tabId: id, ...options });
         return result.pageSnapshot;
+      },
+
+      async click(target, options = {}) {
+        return client.domCuaAction({
+          tabId: id,
+          action: "click",
+          ...normalizeDOMCuaTarget(target),
+          ...options
+        });
+      },
+
+      async type(target, text, options = {}) {
+        return client.domCuaAction({
+          tabId: id,
+          action: "type",
+          text,
+          ...normalizeDOMCuaTarget(target),
+          ...options
+        });
+      },
+
+      async fill(target, text, options = {}) {
+        return client.domCuaAction({
+          tabId: id,
+          action: "fill",
+          text,
+          ...normalizeDOMCuaTarget(target),
+          ...options
+        });
       }
     }
   };
@@ -371,6 +411,36 @@ function normalizeTabId(tabOrId) {
 
 function normalizeNavigateTabRequest(request = {}) {
   return normalizeTabRequest(request, { requireURL: true });
+}
+
+function normalizeDOMCuaActionRequest(request = {}) {
+  const normalized = normalizeTabRequest(request);
+  if (typeof normalized.action !== "string" || normalized.action.length === 0) {
+    throw new Error("Savannah cannot run a DOM CUA action because action was missing.");
+  }
+
+  if (!normalized.nodeId && !normalized.node_id && !normalized.selector) {
+    throw new Error("Savannah cannot run a DOM CUA action because nodeId or selector was missing.");
+  }
+
+  return normalized;
+}
+
+function normalizeDOMCuaTarget(target) {
+  if (typeof target === "string") {
+    return target.startsWith("snapshot-")
+      ? { nodeId: target }
+      : { selector: target };
+  }
+
+  if (target && typeof target === "object") {
+    return {
+      nodeId: target.nodeId ?? target.node_id,
+      selector: target.selector
+    };
+  }
+
+  throw new Error("Savannah cannot target a DOM CUA action because the target was empty.");
 }
 
 function normalizeTabRequest(request = {}, options = {}) {

@@ -206,6 +206,49 @@ struct SavannahTests {
         #expect(acknowledgement.jsonValue.object?["pageSnapshot"]?.object?["visibleText"] == .string("Example Domain"))
     }
 
+    @Test func spiderWebCommandAcknowledgementDecodesCompletedDOMCuaAction() throws {
+        let requestId = "4372F822-0113-4261-B606-58FB6232A011"
+        let data = Data(
+            """
+            {
+              "kind": "savannah.commandAck",
+              "protocolVersion": "0.1.0",
+              "requestId": "\(requestId)",
+              "commandKind": "savannah.domCuaAction",
+              "ok": true,
+              "handled": true,
+              "completedAt": "2026-05-14T18:29:59.199Z",
+              "message": "SpiderWeb ran the requested DOM CUA action.",
+              "actionResult": {
+                "kind": "savannah.domCuaActionResult",
+                "protocolVersion": "0.1.0",
+                "action": "click",
+                "target": {
+                  "nodeId": "snapshot-1",
+                  "tagName": "a",
+                  "selector": "body > div > p > a"
+                },
+                "url": "https://example.com/"
+              },
+              "pageSnapshot": {
+                "kind": "savannah.pageSnapshot",
+                "protocolVersion": "0.1.0",
+                "title": "Example Domain",
+                "visibleText": "Example Domain"
+              }
+            }
+            """.utf8
+        )
+
+        let acknowledgement = try SpiderWebCommandAcknowledgement.decode(from: data)
+        try acknowledgement.validate(expectedRequestId: requestId, expectedProtocolVersion: "0.1.0")
+
+        #expect(acknowledgement.ok)
+        #expect(acknowledgement.commandKind == "savannah.domCuaAction")
+        #expect(acknowledgement.actionResult?.object?["action"] == .string("click"))
+        #expect(acknowledgement.jsonValue.object?["actionResult"]?.object?["kind"] == .string("savannah.domCuaActionResult"))
+    }
+
     @Test func spiderWebCommandAcknowledgementRejectsUnexpectedRequestId() throws {
         let data = Data(
             """

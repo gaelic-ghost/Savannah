@@ -182,6 +182,29 @@ async function getPageSnapshot(request) {
     return { tab, pageSnapshot, snapshotPublish };
 }
 
+async function domCuaAction(request) {
+    const tabId = commandTabId(request);
+    const actionResult = await browser.tabs.sendMessage(tabId, {
+        kind: "savannah.domCuaAction",
+        protocolVersion: PROTOCOL_VERSION,
+        action: request.action,
+        nodeId: request.nodeId ?? request.node_id,
+        selector: request.selector,
+        text: request.text,
+        value: request.value
+    });
+    const pageSnapshot = request.includeSnapshot === false
+        ? undefined
+        : await browser.tabs.sendMessage(tabId, {
+            kind: "savannah.getPageSnapshot",
+            protocolVersion: PROTOCOL_VERSION,
+            maxTextLength: request.maxTextLength
+        });
+    const tab = await browser.tabs.get(tabId);
+    const snapshotPublish = await publishTabs("dom-cua-action");
+    return { tab, actionResult, pageSnapshot, snapshotPublish };
+}
+
 function commandAcknowledgement(command, fields) {
     return {
         kind: "savannah.commandAck",
@@ -215,6 +238,7 @@ function runCommand(command, operation, successMessage, failureMessage) {
             handled: true,
             message: successMessage,
             tab: result.tab,
+            actionResult: result.actionResult,
             pageSnapshot: result.pageSnapshot,
             snapshotPublish: result.snapshotPublish
         }))
@@ -290,6 +314,15 @@ function handleNativePortMessage(message) {
             getPageSnapshot,
             "SpiderWeb read the requested Safari page snapshot.",
             "SpiderWeb could not read the requested Safari page snapshot."
+        );
+    }
+
+    if (command?.kind === "savannah.domCuaAction") {
+        runCommand(
+            command,
+            domCuaAction,
+            "SpiderWeb ran the requested DOM CUA action.",
+            "SpiderWeb could not run the requested DOM CUA action."
         );
     }
 }

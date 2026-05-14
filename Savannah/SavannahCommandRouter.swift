@@ -82,6 +82,13 @@ nonisolated final class SavannahCommandRouter {
                 code: -32015,
                 dispatch: SavannahWebExtensionCommandDispatcher.getPageSnapshot
             )
+        case "domCuaAction":
+            return handleTabCommand(
+                request,
+                authenticated: authenticated,
+                code: -32016,
+                dispatch: SavannahWebExtensionCommandDispatcher.domCuaAction
+            )
         case "finalizeTabs":
             return success(request, result: [
                 "ok": .bool(true),
@@ -186,7 +193,10 @@ nonisolated final class SavannahCommandRouter {
                 "closeTab": .string("web-extension"),
                 "close_tab": .string("web-extension"),
                 "getPageSnapshot": .string("web-extension"),
+                "domCuaAction": .string("web-extension"),
                 "dom_cua_get_visible_dom": .string("web-extension"),
+                "dom_cua_click": .string("web-extension"),
+                "dom_cua_type": .string("web-extension"),
                 "finalizeTabs": .string("app"),
                 "nameSession": .string("app"),
                 "attach": .string("unproven"),

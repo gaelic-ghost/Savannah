@@ -16,6 +16,7 @@ nonisolated enum SavannahWebExtensionCommandDispatcher {
     static let reloadTabMessageName = "savannah.reloadTab"
     static let closeTabMessageName = "savannah.closeTab"
     static let getPageSnapshotMessageName = "savannah.getPageSnapshot"
+    static let domCuaActionMessageName = "savannah.domCuaAction"
     static let dispatchTimeoutSeconds = 5.0
     static let commandAcknowledgementTimeoutSeconds = 15.0
 
@@ -83,6 +84,17 @@ nonisolated enum SavannahWebExtensionCommandDispatcher {
             requiredFields: ["tabId"],
             successMessage: "SpiderWeb read a Safari page snapshot and wrote a command acknowledgement.",
             fallbackFailureMessage: "SpiderWeb reported that Safari did not read the requested page snapshot, but did not include a detailed error message."
+        )
+    }
+
+    static func domCuaAction(params: JSONValue?) -> SavannahCommandDispatchResult {
+        tabCommand(
+            kind: "savannah.domCuaAction",
+            messageName: domCuaActionMessageName,
+            params: params,
+            requiredFields: ["tabId", "action"],
+            successMessage: "SpiderWeb ran a DOM CUA action and wrote a command acknowledgement.",
+            fallbackFailureMessage: "SpiderWeb reported that Safari did not run the requested DOM CUA action, but did not include a detailed error message."
         )
     }
 
@@ -227,6 +239,10 @@ nonisolated enum SavannahWebExtensionCommandDispatcher {
 
         if let pageSnapshot = acknowledgement.pageSnapshot {
             result["pageSnapshot"] = pageSnapshot
+        }
+
+        if let actionResult = acknowledgement.actionResult {
+            result["actionResult"] = actionResult
         }
 
         return result

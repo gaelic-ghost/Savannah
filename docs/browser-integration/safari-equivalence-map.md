@@ -190,6 +190,7 @@ The initial `SpiderWeb` implementation now includes a first native-messaging tab
 - App Group JSON snapshot writing for the containing app to read
 - `browser.tabs.sendMessage(...)` page snapshot requests from the background script to `content.js`
 - a read-only `tab.dom_cua.get_visible_dom()` facade backed by `getPageSnapshot`
+- node-id and selector actions through `tab.dom_cua.click(...)`, `tab.dom_cua.type(...)`, and `tab.dom_cua.fill(...)`
 
 That means `SpiderWeb` is now the first WebExtension-backed tab inventory path. With both Safari extensions enabled and all three targets carrying the `group.com.galewilliams.Savannah` App Group entitlement, `getTabs` returned a `web-extension-snapshot` inventory containing Safari's Start Page tab and an active `https://example.com/` tab.
 
@@ -293,6 +294,7 @@ getTabInfo
 reloadTab
 closeTab
 getPageSnapshot
+domCuaAction
 finalizeTabs
 nameSession
 attach
@@ -319,6 +321,7 @@ Initial support can be narrower:
 | `reloadTab` | reload an existing Safari tab through `SpiderWeb` and wait for a completed tab update |
 | `closeTab` | close an existing Safari tab through `SpiderWeb` and refresh the tab snapshot |
 | `getPageSnapshot` | ask `SpiderWeb` to message the page content script and return a read-only snapshot for `tab.dom_cua.get_visible_dom()` |
+| `domCuaAction` | ask `SpiderWeb` to click or type into a visible page element selected by snapshot node id or CSS selector |
 | `getUserHistory` | unsupported unless a supported Safari or user-approved native source is proven |
 | `attach` / `detach` | start/stop session tracking for an observable page |
 | `executeCdp` | unsupported; keep name for compatibility but report that Safari has no CDP bridge |
