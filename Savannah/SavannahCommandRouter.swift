@@ -52,6 +52,8 @@ nonisolated final class SavannahCommandRouter {
             return success(request, result: SavannahExtensionBridgeStore.loadTabInventoryPayload())
         case "createTab":
             return handleCreateTab(request, authenticated: authenticated)
+        case "navigateTabUrl", "navigate_tab_url":
+            return handleNavigateTabURL(request, authenticated: authenticated)
         case "finalizeTabs":
             return success(request, result: [
                 "ok": .bool(true),
@@ -146,6 +148,8 @@ nonisolated final class SavannahCommandRouter {
                 "getUserHistory": .string("unsupported"),
                 "claimUserTab": .string("unproven"),
                 "createTab": .string("web-extension"),
+                "navigateTabUrl": .string("web-extension"),
+                "navigate_tab_url": .string("web-extension"),
                 "finalizeTabs": .string("app"),
                 "nameSession": .string("app"),
                 "attach": .string("unproven"),
@@ -178,6 +182,23 @@ nonisolated final class SavannahCommandRouter {
                 response: .failure(
                     id: request.id,
                     code: -32010,
+                    message: message,
+                    data: .object(data)
+                )
+            )
+        }
+    }
+
+    private func handleNavigateTabURL(_ request: SavannahRPCRequest, authenticated: Bool) -> CommandResult {
+        switch SavannahWebExtensionCommandDispatcher.navigateTabURL(params: request.params) {
+        case let .success(result):
+            return success(request, result: result)
+        case let .failure(message, data):
+            return CommandResult(
+                authenticated: authenticated,
+                response: .failure(
+                    id: request.id,
+                    code: -32011,
                     message: message,
                     data: .object(data)
                 )

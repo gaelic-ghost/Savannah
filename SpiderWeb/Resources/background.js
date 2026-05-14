@@ -47,12 +47,86 @@ async function createTab(request) {
         active: request.active !== false
     };
 
-    if (typeof request.url === "string" && request.url.length > 0) {
-        tabRequest.url = request.url;
-    }
-
     const tab = await browser.tabs.create(tabRequest);
     const snapshotPublish = await publishTabs("create-tab");
+    return { tab, snapshotPublish };
+}
+
+function normalizeTabId(value) {
+    const tabId = Number(value);
+    if (!Number.isInteger(tabId) || tabId <= 0) {
+        throw new Error(`SpiderWeb could not navigate the requested Safari tab because tabId was invalid: ${value}`);
+    }
+    return tabId;
+}
+
+function normalizedURL(value) {
+    if (typeof value !== "string") {
+        return value;
+    }
+
+    try {
+        return new URL(value).href;
+    } catch {
+        return value;
+    }
+}
+
+function tabMatchesURL(tab, targetURL) {
+    if (typeof targetURL !== "string" || targetURL.length === 0) {
+        return true;
+    }
+
+    return normalizedURL(tab.url) === normalizedURL(targetURL);
+}
+
+async function waitForTabLoad(tabId, targetURL, timeoutMs = 15000) {
+    const initialTab = await browser.tabs.get(tabId);
+    if (initialTab.status === "complete" && tabMatchesURL(initialTab, targetURL)) {
+        return initialTab;
+    }
+
+    return new Promise((resolve, reject) => {
+        let settled = false;
+        const timeout = setTimeout(() => {
+            finish(
+                reject,
+                new Error(`SpiderWeb timed out after ${timeoutMs}ms waiting for Safari tab ${tabId} to load ${targetURL}.`)
+            );
+        }, timeoutMs);
+
+        function finish(callback, value) {
+            if (settled) {
+                return;
+            }
+            settled = true;
+            clearTimeout(timeout);
+            browser.tabs.onUpdated.removeListener(listener);
+            callback(value);
+        }
+
+        function listener(updatedTabId, changeInfo, tab) {
+            if (updatedTabId !== tabId || changeInfo.status !== "complete" || !tabMatchesURL(tab, targetURL)) {
+                return;
+            }
+
+            finish(resolve, tab);
+        }
+
+        browser.tabs.onUpdated.addListener(listener);
+    });
+}
+
+async function navigateTabUrl(request) {
+    const tabId = normalizeTabId(request.tabId ?? request.tab_id);
+    const url = request.url;
+    if (typeof url !== "string" || url.length === 0) {
+        throw new Error("SpiderWeb could not navigate the requested Safari tab because url was missing.");
+    }
+
+    await browser.tabs.update(tabId, { url });
+    const tab = await waitForTabLoad(tabId, url, request.timeoutMs);
+    const snapshotPublish = await publishTabs("navigate-tab-url");
     return { tab, snapshotPublish };
 }
 
@@ -82,6 +156,26 @@ async function publishCommandAcknowledgement(command, fields) {
     }
 }
 
+function runCommand(command, operation, successMessage, failureMessage) {
+    operation(command)
+        .then((result) => publishCommandAcknowledgement(command, {
+            ok: true,
+            handled: true,
+            message: successMessage,
+            tab: result.tab,
+            snapshotPublish: result.snapshotPublish
+        }))
+        .catch((error) => {
+            console.error(failureMessage, error);
+            publishCommandAcknowledgement(command, {
+                ok: false,
+                handled: true,
+                error: String(error),
+                message: failureMessage
+            });
+        });
+}
+
 function handleNativePortMessage(message) {
     console.log("SpiderWeb received app message:", message);
     const command = message?.kind
@@ -93,23 +187,21 @@ function handleNativePortMessage(message) {
                 : null;
 
     if (command?.kind === "savannah.createTab") {
-        createTab(command)
-            .then((result) => publishCommandAcknowledgement(command, {
-                ok: true,
-                handled: true,
-                message: "SpiderWeb created the requested Safari tab.",
-                tab: result.tab,
-                snapshotPublish: result.snapshotPublish
-            }))
-            .catch((error) => {
-                console.error("SpiderWeb could not create requested tab:", error);
-                publishCommandAcknowledgement(command, {
-                    ok: false,
-                    handled: true,
-                    error: String(error),
-                    message: "SpiderWeb could not create the requested Safari tab."
-                });
-            });
+        runCommand(
+            command,
+            createTab,
+            "SpiderWeb created a new Safari tab.",
+            "SpiderWeb could not create the requested Safari tab."
+        );
+    }
+
+    if (command?.kind === "savannah.navigateTabUrl") {
+        runCommand(
+            command,
+            navigateTabUrl,
+            "SpiderWeb navigated the requested Safari tab.",
+            "SpiderWeb could not navigate the requested Safari tab."
+        );
     }
 }
 

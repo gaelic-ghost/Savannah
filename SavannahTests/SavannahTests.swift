@@ -100,6 +100,42 @@ struct SavannahTests {
         #expect(acknowledgement.snapshotPublish?.object?["handled"] == .bool(true))
     }
 
+    @Test func spiderWebCommandAcknowledgementDecodesCompletedNavigation() throws {
+        let requestId = "3E1F6DF4-2A72-4459-987B-03BA2B754801"
+        let data = Data(
+            """
+            {
+              "kind": "savannah.commandAck",
+              "protocolVersion": "0.1.0",
+              "requestId": "\(requestId)",
+              "commandKind": "savannah.navigateTabUrl",
+              "ok": true,
+              "handled": true,
+              "completedAt": "2026-05-14T18:17:59.199Z",
+              "message": "SpiderWeb navigated the requested Safari tab.",
+              "tab": {
+                "id": 2429,
+                "active": true,
+                "status": "complete",
+                "url": "https://example.com/?savannah-goto=1"
+              },
+              "snapshotPublish": {
+                "ok": true,
+                "handled": true
+              }
+            }
+            """.utf8
+        )
+
+        let acknowledgement = try SpiderWebCommandAcknowledgement.decode(from: data)
+        try acknowledgement.validate(expectedRequestId: requestId, expectedProtocolVersion: "0.1.0")
+
+        #expect(acknowledgement.ok)
+        #expect(acknowledgement.commandKind == "savannah.navigateTabUrl")
+        #expect(acknowledgement.tab?.object?["status"] == .string("complete"))
+        #expect(acknowledgement.tab?.object?["url"] == .string("https://example.com/?savannah-goto=1"))
+    }
+
     @Test func spiderWebCommandAcknowledgementRejectsUnexpectedRequestId() throws {
         let data = Data(
             """

@@ -286,6 +286,7 @@ getUserTabs
 getUserHistory
 claimUserTab
 createTab
+navigateTabUrl
 finalizeTabs
 nameSession
 attach
@@ -306,7 +307,8 @@ Initial support can be narrower:
 | `getTabs` | report the active window/tab/page plus any Savannah-created or observed tabs; include explicit partial-inventory metadata |
 | `getUserTabs` | same as `getTabs` until full Safari tab enumeration is proven |
 | `claimUserTab` | claim only an observed page; otherwise return unsupported/not-observable |
-| `createTab` | use `SFSafariWindow.openTab(with:makeActiveIfPossible:)` when there is an active Safari window; otherwise use `SFSafariApplication.openWindow(with:)` |
+| `createTab` | create an active Safari tab through `SpiderWeb` and return the created tab id without treating URL loading as part of creation |
+| `navigateTabUrl` | navigate an existing Safari tab through `SpiderWeb` and wait for the tab's WebExtension update event to report a completed load |
 | `getUserHistory` | unsupported unless a supported Safari or user-approved native source is proven |
 | `attach` / `detach` | start/stop session tracking for an observable page |
 | `executeCdp` | unsupported; keep name for compatibility but report that Safari has no CDP bridge |
@@ -315,7 +317,7 @@ Initial support can be narrower:
 ## Key Open Questions
 
 - Can a Safari App Extension enumerate all windows and tabs, or only the active context Safari exposes to the extension?
-- Can Savannah safely navigate an already-open Safari tab after creation, or should navigation be modeled as create-new-tab/open-window plus page-script commands only?
+- Can Savannah safely support all Chrome `Tab.goto` wait semantics, redirects, and failure modes through Safari WebExtension tab update events alone?
 - Is a Safari Web Extension target a better fit for cross-browser tool parity than a Safari App Extension target for tab inventory, tab updates, screenshots, and native messaging?
 - Would a hybrid design make sense: keep a Safari App Extension for native Mac UI/control, and add a Safari Web Extension target only if the WebExtensions/native-messaging surface gives materially better Codex parity?
 - Can Savannah bundle both a Safari App Extension and a Safari Web Extension without confusing Safari Settings, permissions, or user onboarding?

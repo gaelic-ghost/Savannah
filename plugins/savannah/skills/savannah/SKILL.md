@@ -46,6 +46,7 @@ getUserTabs
 getUserHistory
 claimUserTab
 createTab
+navigateTabUrl
 finalizeTabs
 nameSession
 attach
