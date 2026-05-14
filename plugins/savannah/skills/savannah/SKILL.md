@@ -46,6 +46,10 @@ getUserTabs
 getUserHistory
 claimUserTab
 createTab
+navigateTabUrl
+getTabInfo
+reloadTab
+closeTab
 finalizeTabs
 nameSession
 attach

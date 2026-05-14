@@ -27,7 +27,14 @@ const capabilitySources = {
   getUserTabs: "unproven",
   getUserHistory: "unsupported",
   claimUserTab: "unproven",
-  createTab: "unproven",
+  createTab: "web-extension",
+  navigateTabUrl: "web-extension",
+  navigate_tab_url: "web-extension",
+  getTabInfo: "web-extension",
+  reloadTab: "web-extension",
+  navigate_tab_reload: "web-extension",
+  closeTab: "web-extension",
+  close_tab: "web-extension",
   finalizeTabs: "plugin",
   nameSession: "plugin",
   attach: "unproven",
@@ -120,7 +127,55 @@ export function createSavannahClient(options = {}) {
     },
 
     async createTab(request) {
-      return unsupported("createTab", "Savannah cannot create Safari tabs until the WebExtension or App Extension route is proven.", { request });
+      return appOrFallback("createTab", request ?? {}, () => unsupported(
+        "createTab",
+        "Savannah cannot create Safari tabs until the running app and SpiderWeb extension are available.",
+        { request }
+      ));
+    },
+
+    async navigateTabUrl(request) {
+      return appOrFallback("navigateTabUrl", normalizeNavigateTabRequest(request), () => unsupported(
+        "navigateTabUrl",
+        "Savannah cannot navigate Safari tabs until the running app and SpiderWeb extension are available.",
+        { request }
+      ));
+    },
+
+    async navigate_tab_url(request) {
+      return this.navigateTabUrl(request);
+    },
+
+    async getTabInfo(request) {
+      return appOrFallback("getTabInfo", normalizeTabRequest(request), () => unsupported(
+        "getTabInfo",
+        "Savannah cannot read Safari tab information until the running app and SpiderWeb extension are available.",
+        { request }
+      ));
+    },
+
+    async reloadTab(request) {
+      return appOrFallback("reloadTab", normalizeTabRequest(request), () => unsupported(
+        "reloadTab",
+        "Savannah cannot reload Safari tabs until the running app and SpiderWeb extension are available.",
+        { request }
+      ));
+    },
+
+    async navigate_tab_reload(request) {
+      return this.reloadTab(request);
+    },
+
+    async closeTab(request) {
+      return appOrFallback("closeTab", normalizeTabRequest(request), () => unsupported(
+        "closeTab",
+        "Savannah cannot close Safari tabs until the running app and SpiderWeb extension are available.",
+        { request }
+      ));
+    },
+
+    async close_tab(request) {
+      return this.closeTab(request);
     },
 
     async finalizeTabs() {
@@ -217,7 +272,8 @@ function createBrowserFacade(client) {
       },
 
       async get(id) {
-        return client.attach({ id });
+        const result = await client.getTabInfo({ tabId: id });
+        return createTabFacade(client, result.tab ?? result.id ?? id);
       },
 
       async list() {
@@ -225,15 +281,93 @@ function createBrowserFacade(client) {
         return result.tabs ?? [];
       },
 
-      async new(request = {}) {
-        return client.createTab(request);
+      async new() {
+        const result = await client.createTab({ active: true });
+        return createTabFacade(client, result.tab ?? result.id);
       },
 
       async selected() {
         const result = await client.getTabs();
-        return result.tabs?.[0];
+        const tab = result.tabs?.find((item) => item.active) ?? result.tabs?.[0];
+        return tab ? createTabFacade(client, tab) : undefined;
       }
     }
+  };
+}
+
+function createTabFacade(client, tabOrId) {
+  const id = normalizeTabId(tabOrId);
+
+  return {
+    id,
+
+    async goto(url, options = {}) {
+      await client.navigateTabUrl({ tabId: id, url, ...options });
+    },
+
+    async info() {
+      const result = await client.getTabInfo({ tabId: id });
+      return result.tab;
+    },
+
+    async url() {
+      const tab = await findTabInfo(client, id);
+      return tab?.url;
+    },
+
+    async title() {
+      const tab = await findTabInfo(client, id);
+      return tab?.title;
+    },
+
+    async reload() {
+      await client.reloadTab({ tabId: id });
+    },
+
+    async close() {
+      await client.closeTab({ tabId: id });
+    }
+  };
+}
+
+async function findTabInfo(client, tabId) {
+  const result = await client.getTabs();
+  return result.tabs?.find((tab) => String(tab.id) === String(tabId));
+}
+
+function normalizeTabId(tabOrId) {
+  if (tabOrId && typeof tabOrId === "object" && "id" in tabOrId) {
+    return String(tabOrId.id);
+  }
+
+  if (tabOrId == null || String(tabOrId).length === 0) {
+    throw new Error("Savannah could not create a tab facade because the tab id was missing.");
+  }
+
+  return String(tabOrId);
+}
+
+function normalizeNavigateTabRequest(request = {}) {
+  return normalizeTabRequest(request, { requireURL: true });
+}
+
+function normalizeTabRequest(request = {}, options = {}) {
+  if (request == null || typeof request !== "object") {
+    request = { tabId: request };
+  }
+
+  const tabId = request.tabId ?? request.tab_id ?? request.id;
+  if (tabId == null || String(tabId).length === 0) {
+    throw new Error("Savannah cannot run the Safari tab command because tabId was missing.");
+  }
+
+  if (options.requireURL === true && (typeof request.url !== "string" || request.url.length === 0)) {
+    throw new Error("Savannah cannot navigate a Safari tab because url was missing.");
+  }
+
+  return {
+    ...request,
+    tabId: String(tabId)
   };
 }
 

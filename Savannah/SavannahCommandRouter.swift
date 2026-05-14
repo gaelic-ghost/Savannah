@@ -50,6 +50,31 @@ nonisolated final class SavannahCommandRouter {
             ])
         case "getTabs", "getUserTabs":
             return success(request, result: SavannahExtensionBridgeStore.loadTabInventoryPayload())
+        case "createTab":
+            return handleCreateTab(request, authenticated: authenticated)
+        case "navigateTabUrl", "navigate_tab_url":
+            return handleNavigateTabURL(request, authenticated: authenticated)
+        case "getTabInfo":
+            return handleTabCommand(
+                request,
+                authenticated: authenticated,
+                code: -32012,
+                dispatch: SavannahWebExtensionCommandDispatcher.getTabInfo
+            )
+        case "reloadTab", "navigate_tab_reload":
+            return handleTabCommand(
+                request,
+                authenticated: authenticated,
+                code: -32013,
+                dispatch: SavannahWebExtensionCommandDispatcher.reloadTab
+            )
+        case "closeTab", "close_tab":
+            return handleTabCommand(
+                request,
+                authenticated: authenticated,
+                code: -32014,
+                dispatch: SavannahWebExtensionCommandDispatcher.closeTab
+            )
         case "finalizeTabs":
             return success(request, result: [
                 "ok": .bool(true),
@@ -119,6 +144,12 @@ nonisolated final class SavannahCommandRouter {
 
     private func infoPayload() -> [String: JSONValue] {
         let safariExtensions = SavannahSafariExtensionMonitor.report()
+        let webExtensionBridge = SavannahExtensionBridgeStore.loadStatePayload()
+        let hasSnapshot = webExtensionBridge.object?["available"] == .bool(true)
+        let isFresh = webExtensionBridge.object?["freshness"]?.object?["isFresh"] == .bool(true)
+        let tabCapabilitySource: JSONValue = hasSnapshot
+            ? .string(isFresh ? "web-extension" : "web-extension-stale")
+            : .string("unproven")
 
         return [
             "backendId": .string("savannah"),
@@ -131,15 +162,22 @@ nonisolated final class SavannahCommandRouter {
             ]),
             "extensions": .object(safariExtensions.summary),
             "safariExtensionStates": .object(safariExtensions.details),
-            "webExtensionBridge": SavannahExtensionBridgeStore.loadStatePayload(),
+            "webExtensionBridge": webExtensionBridge,
             "capabilitySources": .object([
                 "ping": .string("app"),
                 "getInfo": .string("app"),
-                "getTabs": .string("unproven"),
-                "getUserTabs": .string("unproven"),
+                "getTabs": tabCapabilitySource,
+                "getUserTabs": tabCapabilitySource,
                 "getUserHistory": .string("unsupported"),
                 "claimUserTab": .string("unproven"),
-                "createTab": .string("unproven"),
+                "createTab": .string("web-extension"),
+                "navigateTabUrl": .string("web-extension"),
+                "navigate_tab_url": .string("web-extension"),
+                "getTabInfo": .string("web-extension"),
+                "reloadTab": .string("web-extension"),
+                "navigate_tab_reload": .string("web-extension"),
+                "closeTab": .string("web-extension"),
+                "close_tab": .string("web-extension"),
                 "finalizeTabs": .string("app"),
                 "nameSession": .string("app"),
                 "attach": .string("unproven"),
@@ -160,6 +198,54 @@ nonisolated final class SavannahCommandRouter {
             authenticated: authenticated,
             response: .success(id: request.id, result: .object(result))
         )
+    }
+
+    private func handleCreateTab(_ request: SavannahRPCRequest, authenticated: Bool) -> CommandResult {
+        switch SavannahWebExtensionCommandDispatcher.createTab(params: request.params) {
+        case let .success(result):
+            return success(request, result: result)
+        case let .failure(message, data):
+            return CommandResult(
+                authenticated: authenticated,
+                response: .failure(
+                    id: request.id,
+                    code: -32010,
+                    message: message,
+                    data: .object(data)
+                )
+            )
+        }
+    }
+
+    private func handleNavigateTabURL(_ request: SavannahRPCRequest, authenticated: Bool) -> CommandResult {
+        handleTabCommand(
+            request,
+            authenticated: authenticated,
+            code: -32011,
+            dispatch: SavannahWebExtensionCommandDispatcher.navigateTabURL
+        )
+    }
+
+    private func handleTabCommand(
+        _ request: SavannahRPCRequest,
+        authenticated: Bool,
+        code: Int,
+        dispatch: (JSONValue?) -> SavannahCommandDispatchResult
+    ) -> CommandResult {
+        switch dispatch(request.params) {
+        case let .success(result):
+            return success(request, result: result)
+        case let .failure(message, data):
+            return CommandResult(
+                authenticated: authenticated,
+                response: .failure(
+                    id: request.id,
+                    code: code,
+                    message: message,
+                    data: .object(data)
+                )
+            )
+        }
     }
 }
 
