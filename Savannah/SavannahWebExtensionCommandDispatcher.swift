@@ -12,6 +12,7 @@ nonisolated enum SavannahWebExtensionCommandDispatcher {
     static let extensionBundleIdentifier = "com.galewilliams.Savannah.SpiderWeb"
     static let createTabMessageName = "savannah.createTab"
     static let dispatchTimeoutSeconds = 5.0
+    static let commandAcknowledgementTimeoutSeconds = 15.0
 
     static func createTab(params: JSONValue?) -> SavannahCommandDispatchResult {
         let request = CreateTabRequest(params: params)
@@ -52,32 +53,84 @@ nonisolated enum SavannahWebExtensionCommandDispatcher {
             )
         }
 
-        return .success([
-            "ok": .bool(true),
-            "accepted": .bool(true),
-            "capabilitySource": .string("web-extension"),
-            "message": .string("Savannah asked SpiderWeb to create a Safari tab. SpiderWeb will publish an updated tab snapshot after Safari applies the request."),
-            "command": .object(request.payload),
-            "messageName": .string(createTabMessageName),
-            "extensionBundleIdentifier": .string(extensionBundleIdentifier)
-        ])
+        switch SavannahExtensionBridgeStore.waitForCommandAcknowledgement(
+            requestId: request.requestId,
+            timeoutSeconds: commandAcknowledgementTimeoutSeconds
+        ) {
+        case let .success(acknowledgement):
+            guard acknowledgement.ok else {
+                return .failure(
+                    message: acknowledgement.message
+                        ?? acknowledgement.error
+                        ?? "SpiderWeb reported that Safari did not create the requested tab, but did not include a detailed error message.",
+                    data: [
+                        "capabilitySource": .string("web-extension"),
+                        "messageName": .string(createTabMessageName),
+                        "extensionBundleIdentifier": .string(extensionBundleIdentifier),
+                        "acknowledgement": acknowledgement.jsonValue
+                    ]
+                )
+            }
+
+            return .success([
+                "ok": .bool(true),
+                "accepted": .bool(true),
+                "completed": .bool(true),
+                "capabilitySource": .string("web-extension"),
+                "message": .string("SpiderWeb created the Safari tab and wrote a command acknowledgement."),
+                "command": .object(request.payload),
+                "acknowledgement": acknowledgement.jsonValue,
+                "messageName": .string(createTabMessageName),
+                "extensionBundleIdentifier": .string(extensionBundleIdentifier)
+            ])
+        case .timeout:
+            return .failure(
+                message: "Savannah asked SpiderWeb to create a Safari tab, but SpiderWeb did not write a command acknowledgement within \(Int(commandAcknowledgementTimeoutSeconds)) seconds.",
+                data: [
+                    "capabilitySource": .string("web-extension"),
+                    "messageName": .string(createTabMessageName),
+                    "extensionBundleIdentifier": .string(extensionBundleIdentifier),
+                    "requestId": .string(request.requestId)
+                ]
+            )
+        case let .failure(error):
+            return .failure(
+                message: error.localizedDescription,
+                data: [
+                    "capabilitySource": .string("web-extension"),
+                    "messageName": .string(createTabMessageName),
+                    "extensionBundleIdentifier": .string(extensionBundleIdentifier),
+                    "requestId": .string(request.requestId)
+                ]
+            )
+        }
     }
 }
 
+nonisolated enum SavannahCommandAcknowledgementWaitResult {
+    case success(SpiderWebCommandAcknowledgement)
+    case timeout
+    case failure(Error)
+}
+
 nonisolated struct CreateTabRequest {
+    let requestId: String
     let url: String?
     let active: Bool
 
     init(params: JSONValue?) {
         let object = params?.object ?? [:]
+        requestId = UUID().uuidString
         url = object["url"]?.string
         active = object["active"]?.bool ?? true
+        SavannahExtensionBridgeStore.removeCommandAcknowledgement(requestId: requestId)
     }
 
     var payload: [String: JSONValue] {
         var payload: [String: JSONValue] = [
             "kind": .string("savannah.createTab"),
             "protocolVersion": .string(SavannahExtensionBridgeStore.protocolVersion),
+            "requestId": .string(requestId),
             "active": .bool(active)
         ]
 
@@ -89,6 +142,7 @@ nonisolated struct CreateTabRequest {
         var userInfo: [String: Any] = [
             "kind": "savannah.createTab",
             "protocolVersion": SavannahExtensionBridgeStore.protocolVersion,
+            "requestId": requestId,
             "active": active
         ]
 

@@ -51,8 +51,35 @@ async function createTab(request) {
         tabRequest.url = request.url;
     }
 
-    await browser.tabs.create(tabRequest);
-    return publishTabs("create-tab");
+    const tab = await browser.tabs.create(tabRequest);
+    const snapshotPublish = await publishTabs("create-tab");
+    return { tab, snapshotPublish };
+}
+
+function commandAcknowledgement(command, fields) {
+    return {
+        kind: "savannah.commandAck",
+        protocolVersion: PROTOCOL_VERSION,
+        requestId: command.requestId,
+        commandKind: command.kind,
+        completedAt: new Date().toISOString(),
+        ...fields
+    };
+}
+
+async function publishCommandAcknowledgement(command, fields) {
+    if (typeof command.requestId !== "string" || command.requestId.length === 0) {
+        console.error("SpiderWeb could not acknowledge app command because requestId was missing:", command);
+        return;
+    }
+
+    try {
+        const acknowledgement = commandAcknowledgement(command, fields);
+        const response = await browser.runtime.sendNativeMessage(APPLICATION_ID, acknowledgement);
+        console.log("SpiderWeb published command acknowledgement:", response);
+    } catch (error) {
+        console.error("SpiderWeb could not publish command acknowledgement:", error);
+    }
 }
 
 function handleNativePortMessage(message) {
@@ -66,9 +93,23 @@ function handleNativePortMessage(message) {
                 : null;
 
     if (command?.kind === "savannah.createTab") {
-        createTab(command).catch((error) => {
-            console.error("SpiderWeb could not create requested tab:", error);
-        });
+        createTab(command)
+            .then((result) => publishCommandAcknowledgement(command, {
+                ok: true,
+                handled: true,
+                message: "SpiderWeb created the requested Safari tab.",
+                tab: result.tab,
+                snapshotPublish: result.snapshotPublish
+            }))
+            .catch((error) => {
+                console.error("SpiderWeb could not create requested tab:", error);
+                publishCommandAcknowledgement(command, {
+                    ok: false,
+                    handled: true,
+                    error: String(error),
+                    message: "SpiderWeb could not create the requested Safari tab."
+                });
+            });
     }
 }
 
