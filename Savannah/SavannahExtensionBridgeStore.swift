@@ -325,6 +325,7 @@ nonisolated struct SpiderWebCommandAcknowledgement: Decodable, Equatable {
     let message: String?
     let error: String?
     let tab: JSONValue?
+    let actionResult: JSONValue?
     let pageSnapshot: JSONValue?
     let snapshotPublish: JSONValue?
     let receivedAt: String?
@@ -345,6 +346,7 @@ nonisolated struct SpiderWebCommandAcknowledgement: Decodable, Equatable {
         object["message"] = message.map(JSONValue.string)
         object["error"] = error.map(JSONValue.string)
         object["tab"] = tab
+        object["actionResult"] = actionResult
         object["pageSnapshot"] = pageSnapshot
         object["snapshotPublish"] = snapshotPublish
         object["receivedAt"] = receivedAt.map(JSONValue.string)

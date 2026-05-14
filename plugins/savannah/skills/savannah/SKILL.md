@@ -51,6 +51,7 @@ getTabInfo
 reloadTab
 closeTab
 getPageSnapshot
+domCuaAction
 finalizeTabs
 nameSession
 attach
@@ -65,9 +66,10 @@ The tab facade also exposes the first DOM-side Chrome-shaped read path:
 ```js
 const tab = await browser.tabs.selected();
 const snapshot = await tab.dom_cua.get_visible_dom();
+await tab.dom_cua.click(snapshot.interactiveElements[0]);
 ```
 
-That path is backed by `SpiderWeb` content-script messaging and returns a page snapshot with URL, title, viewport, visible text, and visible interactive elements. Treat it as a read-only proof, not full Chrome DOM CUA parity yet.
+That path is backed by `SpiderWeb` content-script messaging and returns a page snapshot with URL, title, viewport, visible text, and visible interactive elements. `tab.dom_cua.click(...)`, `tab.dom_cua.type(...)`, and `tab.dom_cua.fill(...)` accept either a snapshot element object, a `snapshot-N` node id, or a CSS selector. Treat this as node-id/selector DOM CUA parity, not full Chrome Playwright parity yet.
 
 Unsupported commands must return explicit unsupported-command errors with a capability source of `unsupported` or `unproven`.
 
