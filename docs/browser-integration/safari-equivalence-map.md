@@ -188,6 +188,8 @@ The initial `SpiderWeb` implementation now includes a first native-messaging tab
 - `browser.tabs.query({})` snapshots from the background script
 - `browser.runtime.sendNativeMessage(...)` delivery to the native handler
 - App Group JSON snapshot writing for the containing app to read
+- `browser.tabs.sendMessage(...)` page snapshot requests from the background script to `content.js`
+- a read-only `tab.dom_cua.get_visible_dom()` facade backed by `getPageSnapshot`
 
 That means `SpiderWeb` is now the first WebExtension-backed tab inventory path. With both Safari extensions enabled and all three targets carrying the `group.com.galewilliams.Savannah` App Group entitlement, `getTabs` returned a `web-extension-snapshot` inventory containing Safari's Start Page tab and an active `https://example.com/` tab.
 
@@ -290,6 +292,7 @@ navigateTabUrl
 getTabInfo
 reloadTab
 closeTab
+getPageSnapshot
 finalizeTabs
 nameSession
 attach
@@ -315,6 +318,7 @@ Initial support can be narrower:
 | `getTabInfo` | read a single Safari tab through `SpiderWeb` and return a Chrome-style tab facade from `browser.tabs.get(id)` |
 | `reloadTab` | reload an existing Safari tab through `SpiderWeb` and wait for a completed tab update |
 | `closeTab` | close an existing Safari tab through `SpiderWeb` and refresh the tab snapshot |
+| `getPageSnapshot` | ask `SpiderWeb` to message the page content script and return a read-only snapshot for `tab.dom_cua.get_visible_dom()` |
 | `getUserHistory` | unsupported unless a supported Safari or user-approved native source is proven |
 | `attach` / `detach` | start/stop session tracking for an observable page |
 | `executeCdp` | unsupported; keep name for compatibility but report that Safari has no CDP bridge |
@@ -324,6 +328,7 @@ Initial support can be narrower:
 
 - Can a Safari App Extension enumerate all windows and tabs, or only the active context Safari exposes to the extension?
 - Can Savannah safely support all Chrome `Tab.goto` wait semantics, redirects, and failure modes through Safari WebExtension tab update events alone?
+- How much of Chrome's `tab.dom_cua` surface can be matched with WebExtension content scripts before Savannah needs native automation or Web Inspector support?
 - Is a Safari Web Extension target a better fit for cross-browser tool parity than a Safari App Extension target for tab inventory, tab updates, screenshots, and native messaging?
 - Would a hybrid design make sense: keep a Safari App Extension for native Mac UI/control, and add a Safari Web Extension target only if the WebExtensions/native-messaging surface gives materially better Codex parity?
 - Can Savannah bundle both a Safari App Extension and a Safari Web Extension without confusing Safari Settings, permissions, or user onboarding?

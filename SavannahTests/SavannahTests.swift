@@ -166,6 +166,46 @@ struct SavannahTests {
         #expect(acknowledgement.snapshotPublish?.object?["handled"] == .bool(true))
     }
 
+    @Test func spiderWebCommandAcknowledgementDecodesCompletedPageSnapshot() throws {
+        let requestId = "6C56E0F4-B34B-4FD2-B6ED-67AB63283C80"
+        let data = Data(
+            """
+            {
+              "kind": "savannah.commandAck",
+              "protocolVersion": "0.1.0",
+              "requestId": "\(requestId)",
+              "commandKind": "savannah.getPageSnapshot",
+              "ok": true,
+              "handled": true,
+              "completedAt": "2026-05-14T18:19:59.199Z",
+              "message": "SpiderWeb read the requested Safari page snapshot.",
+              "tab": {
+                "id": 2429,
+                "active": true,
+                "status": "complete",
+                "url": "https://example.com/?savannah-page-snapshot=1"
+              },
+              "pageSnapshot": {
+                "kind": "savannah.pageSnapshot",
+                "protocolVersion": "0.1.0",
+                "title": "Example Domain",
+                "url": "https://example.com/?savannah-page-snapshot=1",
+                "visibleText": "Example Domain",
+                "interactiveElements": []
+              }
+            }
+            """.utf8
+        )
+
+        let acknowledgement = try SpiderWebCommandAcknowledgement.decode(from: data)
+        try acknowledgement.validate(expectedRequestId: requestId, expectedProtocolVersion: "0.1.0")
+
+        #expect(acknowledgement.ok)
+        #expect(acknowledgement.commandKind == "savannah.getPageSnapshot")
+        #expect(acknowledgement.pageSnapshot?.object?["title"] == .string("Example Domain"))
+        #expect(acknowledgement.jsonValue.object?["pageSnapshot"]?.object?["visibleText"] == .string("Example Domain"))
+    }
+
     @Test func spiderWebCommandAcknowledgementRejectsUnexpectedRequestId() throws {
         let data = Data(
             """

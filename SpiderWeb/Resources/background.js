@@ -170,6 +170,18 @@ async function closeTab(request) {
     return { snapshotPublish };
 }
 
+async function getPageSnapshot(request) {
+    const tabId = commandTabId(request);
+    const pageSnapshot = await browser.tabs.sendMessage(tabId, {
+        kind: "savannah.getPageSnapshot",
+        protocolVersion: PROTOCOL_VERSION,
+        maxTextLength: request.maxTextLength
+    });
+    const tab = await browser.tabs.get(tabId);
+    const snapshotPublish = await publishTabs("get-page-snapshot");
+    return { tab, pageSnapshot, snapshotPublish };
+}
+
 function commandAcknowledgement(command, fields) {
     return {
         kind: "savannah.commandAck",
@@ -203,6 +215,7 @@ function runCommand(command, operation, successMessage, failureMessage) {
             handled: true,
             message: successMessage,
             tab: result.tab,
+            pageSnapshot: result.pageSnapshot,
             snapshotPublish: result.snapshotPublish
         }))
         .catch((error) => {
@@ -268,6 +281,15 @@ function handleNativePortMessage(message) {
             closeTab,
             "SpiderWeb closed the requested Safari tab.",
             "SpiderWeb could not close the requested Safari tab."
+        );
+    }
+
+    if (command?.kind === "savannah.getPageSnapshot") {
+        runCommand(
+            command,
+            getPageSnapshot,
+            "SpiderWeb read the requested Safari page snapshot.",
+            "SpiderWeb could not read the requested Safari page snapshot."
         );
     }
 }

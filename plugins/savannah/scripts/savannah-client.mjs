@@ -35,6 +35,8 @@ const capabilitySources = {
   navigate_tab_reload: "web-extension",
   closeTab: "web-extension",
   close_tab: "web-extension",
+  getPageSnapshot: "web-extension",
+  dom_cua_get_visible_dom: "web-extension",
   finalizeTabs: "plugin",
   nameSession: "plugin",
   attach: "unproven",
@@ -176,6 +178,14 @@ export function createSavannahClient(options = {}) {
 
     async close_tab(request) {
       return this.closeTab(request);
+    },
+
+    async getPageSnapshot(request) {
+      return appOrFallback("getPageSnapshot", normalizeTabRequest(request), () => unsupported(
+        "getPageSnapshot",
+        "Savannah cannot read Safari page snapshots until the running app and SpiderWeb content script are available.",
+        { request }
+      ));
     },
 
     async finalizeTabs() {
@@ -326,6 +336,18 @@ function createTabFacade(client, tabOrId) {
 
     async close() {
       await client.closeTab({ tabId: id });
+    },
+
+    async pageSnapshot(options = {}) {
+      const result = await client.getPageSnapshot({ tabId: id, ...options });
+      return result.pageSnapshot;
+    },
+
+    dom_cua: {
+      async get_visible_dom(options = {}) {
+        const result = await client.getPageSnapshot({ tabId: id, ...options });
+        return result.pageSnapshot;
+      }
     }
   };
 }
